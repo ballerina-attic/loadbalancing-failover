@@ -182,7 +182,6 @@ Refer to the complete implementation of the book store service in the [loadbalan
 
   You can see that the book search service has invoked book store backed with round robin load balancing pattern. The `"Served by Data Ceter"` is repeating as 1 -> 2 -> 3 -> 1 pattern.
 
-&nbsp;
 
 #### Failover
 
