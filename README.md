@@ -1,5 +1,5 @@
 # Failover and Load Balancing
-Load Balancing is efficiently distributing incoming network traffic across a group of backend servers and failover refers to a procedure by which a system automatically transfers control to a duplicate system when it detects a fault or failure. The combination of load balancing and failover techniques will create highly available systems with efficiently distributing the workload among available resources. Ballerina language supports load balancing and failover out-of-the-box.
+Load Balancing is efficiently distributing incoming network traffic across a group of backend servers. Failover refers to a procedure by which a system automatically transfers control to a duplicate system when it detects a fault or failure. The combination of load balancing and failover techniques will create highly available systems with efficiently distributing the workload among available resources. Ballerina language supports load balancing and failover out-of-the-box.
 
 > This guide walks you through the process of adding load balancing and failover for Ballerina programmes.
 
@@ -14,18 +14,9 @@ The following are the sections available in this guide.
 
 ## <a name="what-you-build"></a>  What you'll build
 
-You’ll build a web service with load balancing and failover mechanisms. To understand this better, you'll be mapping this with a real-world scenario of a book finding service. The book finding service will use three remote backends running three identical bookstore services to retrieve the book details.The failover and load balancing mechanisms help to balance the load among all the available remote servers.
-
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
+You’ll build a web service with load balancing and failover mechanisms. To understand this better, you'll be mapping this with a real-world scenario of a book finding service. The book finding service will call one from the three identical bookstore backends to retrieve the book details. With this guide you'll be able to understand how failover and load balancing mechanisms helps to balance the load among all the available remote servers.
 
 ![Load Balancer](images/load_balancer_image1.png)
-
-&nbsp;
-&nbsp;
-&nbsp;
 
 **Request book details from book search service**: To search a new book you can use the HTTP GET request that contains the book name as a path parameter.
 
@@ -53,14 +44,14 @@ The project structure for this guide should be as the following.
     └── book_store_service.bal
 ```
 
-The `booksearchservice` is the service that handles the client orders to find books from bookstores. Book search service call bookstore backends to retrieve book details. You can find the loadbalancing and failover mechanisms are applied when the book search service calls three identical backend servers.
+The `booksearchservice` is the service that handles the client orders to find books from bookstores. Book search service call bookstore backends to retrieve book details. You can see that the loadbalancing and failover mechanisms are applied when the book search service calls three identical backend servers.
 
 The `bookstorebacked` is an independent web service that accepts orders via HTTP POST method from `booksearchservice` and sends the details of the book back to the `booksearchservice`.
 
 ### Implementation of the Ballerina services
 
 #### book_search_service.bal
-The `ballerina.net.http.resiliency` package contains the load balancer implementation. After importing that package you can create an endpoint with a load balancer. The `endpoint` keyword in Ballerina refers to a connection with a remote service. Here you'll have three identical remote services to load balance across. First, you need to import ` ballerina.net.http.resiliency` package to use the loadbalancer. Next, create a LoadBalancer end point by ` create resiliency:LoadBalancer` statement. Then you need to create an array of HTTP Clients that you needs to be Loadbalanced across. Finally, pass the `resiliency:roundRobin` argument to the `create loadbalancer` constructor. Now whenever you call the `bookStoreEndPoints` remote HTTP endpoint, it goes through the failover and load balancer. 
+The `ballerina.net.http.resiliency` package contains the load balancer implementation. After importing that package you can create an endpoint with a load balancer. The `endpoint` keyword in Ballerina refers to a connection with a remote service. Here you'll have three identical remote services to load balance across. First, create a LoadBalancer end point by ` create resiliency:LoadBalancer` statement. Then you need to create an array of HTTP Clients that you needs to be Loadbalanced across. Finally, pass the `resiliency:roundRobin` argument to the `create loadbalancer` constructor. Now whenever you call the `bookStoreEndPoints` remote HTTP endpoint, it goes through the failover and load balancer. 
 
 ```ballerina
 package booksearchservice;
@@ -149,7 +140,7 @@ Refer to the complete implementation of the book store service in the [loadbalan
     $ ballerina run booksearchservice/
    ```
 
-2. Run the three instances of the book store service. Here, you have to enter the service port number in each service instance. You can pass the port number as parameter `Bport=<Port Number>`
+2. Next, run the three instances of the book store service. Here you have to enter the service port number in each service instance. You can pass the port number as parameter `Bport=<Port Number>`
    ``` bash
    // 1st instance with port number 9011
    $ ballerina run bookstorebacked/ -Bport=9011
@@ -164,7 +155,7 @@ Refer to the complete implementation of the book store service in the [loadbalan
     // 3rd instance with port number 9013
     $ ballerina run bookstorebacked/ -Bport=9013
    ```
-   Now all the required servers are up and runninig.
+   With that all the required services for this guide should be up and runninig.
   
 3. Invoke the book search service by sending the following HTTP GET request to the book search service
  
@@ -175,7 +166,7 @@ Refer to the complete implementation of the book store service in the [loadbalan
    ```json
    {"Served by Data Ceter":1,"Book Details":{"Title":"Carrie","Author":"Stephen King","ISBN":"978-3-16-148410-   0","Availability":"Available"}}
    ```
-   The`"Served by Data Ceter":1` entry says that 1st instance of book store service has invoked to retrieved the book details
+   The`"Served by Data Ceter":1` entry says that 1st instance of book store backend has invoked to find the book details
 
 4. Repeat the above request for three times. You should see the responses as follows,
 
@@ -185,15 +176,17 @@ Refer to the complete implementation of the book store service in the [loadbalan
    ```json
    {"Served by Data Ceter":3,"Book Details":{"Title":"Carrie","Author":"Stephen King","ISBN":"978-3-16-148410-   0","Availability":"Available"}}
    ```
-  ```json
+   ```json
    {"Served by Data Ceter":1,"Book Details":{"Title":"Carrie","Author":"Stephen King","ISBN":"978-3-16-148410-   0","Availability":"Available"}}
    ```
 
-  You can see that the book search service has invoked book store backed with round robin load balancing pattern. The `"Served by Data Ceter"` is repeating as 1->2->3->1
+  You can see that the book search service has invoked book store backed with round robin load balancing pattern. The `"Served by Data Ceter"` is repeating as 1 -> 2 -> 3 -> 1 pattern.
+
+&nbsp;
 
 #### Failover
 
-1.  Now, shut down the 3rd instance of the book store service by terminating following instance,
+1.  Now shut down the 3rd instance of the book store service by terminating following instance,
     ```bash
     // 3rd instance with port number 9013
     $ ballerina run bookstorebacked/ -Bport=9013
@@ -201,21 +194,21 @@ Refer to the complete implementation of the book store service in the [loadbalan
     ``` 
 2.  Then send following request repeatedly for three times,
 
-   ```bash
-   curl -X GET http://localhost:9090/book/Carrie
-   ```  
+    ```bash
+    curl -X GET http://localhost:9090/book/Carrie
+    ```  
 3.  The responses for above requests should look similar to,
-   ```json
-   {"Served by Data Ceter":1,"Book Details":{"Title":"Carrie","Author":"Stephen King","ISBN":"978-3-16-148410-   0","Availability":"Available"}}
-   ```
-   ```json
-   {"Served by Data Ceter":2,"Book Details":{"Title":"Carrie","Author":"Stephen King","ISBN":"978-3-16-148410-   0","Availability":"Available"}}
-   ```
-   ```json
-   {"Served by Data Ceter":1,"Book Details":{"Title":"Carrie","Author":"Stephen King","ISBN":"978-3-16-148410-   0","Availability":"Available"}}
-   ```
+    ```json
+    {"Served by Data Ceter":1,"Book Details":{"Title":"Carrie","Author":"Stephen King","ISBN":"978-3-16-148410-    0","Availability":"Available"}}
+    ```
+    ```json
+    {"Served by Data Ceter":2,"Book Details":{"Title":"Carrie","Author":"Stephen King","ISBN":"978-3-16-148410-   0","Availability":"Available"}}
+    ```
+    ```json
+    {"Served by Data Ceter":1,"Book Details":{"Title":"Carrie","Author":"Stephen King","ISBN":"978-3-16-148410-   0","Availability":"Available"}}
+    ```
    
- 3.  This means that the failover is preventing the 3rd instance form invoking since we have shut down the 3rd instance. Meantime you'll see the order of `"Served by Data Ceter"` is similar to 1->2->1. 
+ 3.  This means that the failover is preventing the 3rd instance form invoking since we have shut down the 3rd instance. Meantime you'll see the order of `"Served by Data Ceter"` is similar to 1 -> 2 -> 1 pattern.
  
  ### <a name="unit-testing"></a> Writing unit tests 
 
@@ -229,7 +222,9 @@ To run the unit tests, go to the sample root directory and run the following com
 ```bash
 $ ballerina test bookstorebacked/
 ```
-
+```bash
+$ ballerina test booksearchservice/
+```
 ## <a name="deploying-the-scenario"></a> Deployment
 
 Once you are done with the development, you can deploy the service using any of the methods listed below. 
