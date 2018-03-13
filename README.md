@@ -1,4 +1,4 @@
-# Load Balancing 
+# Load Balancing across Multiple Service Instances
 Load Balancing is efficiently distributing incoming network traffic across a group of backend servers. The combination of load balancing and failover techniques will create highly available systems with efficiently distributing the workload among all the available resources. Ballerina language supports load balancing out-of-the-box.
 
 > This guide walks you through the process of adding load balancing for Ballerina programmes.
