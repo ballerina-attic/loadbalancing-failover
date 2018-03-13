@@ -1,7 +1,7 @@
-# Failover and Load Balancing
-Load Balancing is efficiently distributing incoming network traffic across a group of backend servers. Failover refers to a procedure by which a system automatically transfers control to a duplicate system when it detects a fault or failure. The combination of load balancing and failover techniques will create highly available systems with efficiently distributing the workload among available resources. Ballerina language supports load balancing and failover out-of-the-box.
+# Load Balancing 
+Load Balancing is efficiently distributing incoming network traffic across a group of backend servers. The combination of load balancing and failover techniques will create highly available systems with efficiently distributing the workload among all the available resources. Ballerina language supports load balancing out-of-the-box.
 
-> This guide walks you through the process of adding load balancing and failover for Ballerina programmes.
+> This guide walks you through the process of adding load balancing for Ballerina programmes.
 
 The following are the sections available in this guide.
 
@@ -14,7 +14,7 @@ The following are the sections available in this guide.
 
 ## <a name="what-you-build"></a>  What you'll build
 
-You’ll build a web service with load balancing and failover mechanisms. To understand this better, you'll be mapping this with a real-world scenario of a book finding service. The book finding service will call one from the three identical bookstore backends to retrieve the book details. With this guide you'll be able to understand how failover and load balancing mechanisms helps to balance the load among all the available remote servers.
+You’ll build a web service with load balancing. To understand this better, you'll be mapping this with a real-world scenario of a book searching service. The book searching service will call one from the three identical bookstore backends to retrieve the book details. With this guide you'll be able to understand how the load balancing mechanism helps to balance the load among all the available remote servers.
 
 ![Load Balancer](images/load_balancer_image1.png)
 
@@ -30,7 +30,7 @@ You’ll build a web service with load balancing and failover mechanisms. To und
 - Ballerina IDE plugins ([IntelliJ IDEA](https://plugins.jetbrains.com/plugin/9520-ballerina), [VSCode](https://marketplace.visualstudio.com/items?itemName=WSO2.Ballerina), [Atom](https://atom.io/packages/language-ballerina))
 - [Docker](https://docs.docker.com/engine/installation/)
 
-## <a name="developing-service"></a> Developing the RESTFul service with circuit breaker
+## <a name="developing-service"></a> Developing the RESTFul service with Load Balancer
 
 ### Before you begin
 
@@ -44,14 +44,14 @@ The project structure for this guide should be as the following.
     └── book_store_service.bal
 ```
 
-The `booksearchservice` is the service that handles the client orders to find books from bookstores. Book search service call bookstore backends to retrieve book details. You can see that the loadbalancing and failover mechanisms are applied when the book search service calls three identical backend servers.
+The `booksearchservice` is the service that handles the client orders to find books from bookstores. Book search service call bookstore backends to retrieve book details. You can see that the loadbalancing technique is applied when the book search service calls one from the three identical backend servers.
 
 The `bookstorebacked` is an independent web service that accepts orders via HTTP POST method from `booksearchservice` and sends the details of the book back to the `booksearchservice`.
 
 ### Implementation of the Ballerina services
 
 #### book_search_service.bal
-The `ballerina.net.http.resiliency` package contains the load balancer implementation. After importing that package you can create an endpoint with a load balancer. The `endpoint` keyword in Ballerina refers to a connection with a remote service. Here you'll have three identical remote services to load balance across. First, create a LoadBalancer end point by ` create resiliency:LoadBalancer` statement. Then you need to create an array of HTTP Clients that you needs to be Loadbalanced across. Finally, pass the `resiliency:roundRobin` argument to the `create loadbalancer` constructor. Now whenever you call the `bookStoreEndPoints` remote HTTP endpoint, it goes through the failover and load balancer. 
+The `ballerina.net.http.resiliency` package contains the load balancer implementation. After importing that package you can create an endpoint with a load balancer. The `endpoint` keyword in Ballerina refers to a connection with a remote service. Here you'll have three identical remote services to load balance across. First, create a LoadBalancer end point by ` create resiliency:LoadBalancer` statement. Then you need to create an array of HTTP Clients that you needs to be Loadbalanced across. Finally, pass the `resiliency:roundRobin` argument to the `create loadbalancer` constructor. Now whenever you call the `bookStoreEndPoints` remote HTTP endpoint, it goes through the load balancer. 
 
 ```ballerina
 package booksearchservice;
@@ -183,7 +183,7 @@ Refer to the complete implementation of the book store service in the [loadbalan
   You can see that the book search service has invoked book store backed with round robin load balancing pattern. The `"Served by Data Ceter"` is repeating as 1 -> 2 -> 3 -> 1 pattern.
 
 
-#### Failover
+#### Load balancer: some servers down
 
 1.  Now shut down the 3rd instance of the book store service by terminating following instance,
     ```bash
@@ -207,7 +207,7 @@ Refer to the complete implementation of the book store service in the [loadbalan
     {"Served by Data Ceter":1,"Book Details":{"Title":"Carrie","Author":"Stephen King","ISBN":"978-3-16-148410-   0","Availability":"Available"}}
     ```
    
- 3.  This means that the failover is preventing the 3rd instance form invoking since we have shut down the 3rd instance. Meantime you'll see the order of `"Served by Data Ceter"` is similar to 1 -> 2 -> 1 pattern.
+ 3.  This means that the loadbalancer is preventing the 3rd instance form invoking since we have shut down the 3rd instance. Meantime you'll see the order of `"Served by Data Ceter"` is similar to 1 -> 2 -> 1 pattern.
  
  ### <a name="unit-testing"></a> Writing unit tests 
 
