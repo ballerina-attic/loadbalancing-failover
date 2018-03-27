@@ -14,28 +14,32 @@
 // specific language governing permissions and limitations
 // under the License.
 
-package bookstorebacked;
+package book_store_backed;
 
-import ballerina.config;
-import ballerina.log;
-import ballerina.net.http;
+import ballerina/config;
+import ballerina/log;
+import ballerina/net.http;
 
 // Get the port number from CLI parameters
 const int PORT = getPortFromConfig();
 
+// Create the endpoint with the PORT from CLI arguments
+endpoint http:ServiceEndpoint bookStoreEP {
+    port:PORT
+};
 
-// Assign the the service to the PORT
-@http:configuration {basePath:"book-store", port:PORT}
-service<http> bookStore {
+// Set the basepath to the service
+@http:ServiceConfig {basePath:"/book-store"}
+service<http:Service> bookStore bind bookStoreEP {
 
     // Set the resource configurations
-    @http:resourceConfig {
+    @http:ResourceConfig {
         methods:["POST"],
         path:"/"
     }
-    resource bookStoreResource (http:Connection conn, http:InRequest req) {
+    bookStoreResource (endpoint conn, http:Request req) {
         // Retrieve the book name from the payload
-        json requestPayload = req.getJsonPayload();
+        json requestPayload =? req.getJsonPayload();
         json bookTitle = requestPayload.bookName;
         // Populate the output data with mock book details
         json responsePayload = {
@@ -49,22 +53,39 @@ service<http> bookStore {
                                                   }
                                };
         // Set the payload and send the results to the client
-        http:OutResponse outResponse = {};
+        http:Response outResponse = {};
         outResponse.setJsonPayload(responsePayload);
-        _ = conn.respond(outResponse);
+        _ = conn -> respond(outResponse);
     }
 }
 
 // Function to receive the port number from the CLI parameters
-function getPortFromConfig () (int) {
+function getPortFromConfig () returns (int) {
     // Get the port value as a string
-    var portNum = config:getGlobalValue("port");
-    // Convert the port number to a integer
-    var port, err = <int>portNum;
-    // Exit the program if port number is invalid
-    if (err != null) {
-        log:printError("Error while retriving port number, please add '-Bport = <port_number>' parameter");
-        throw err;
+    var usersConfig = config:getAsString("port");
+    match usersConfig {
+        string portNum => {
+        // Convert the port number to a integer
+            var result = <int>portNum;
+            // Check weather the PORT number is an Int
+            match result {
+            // Return port number if the portNumber converted to int successfully
+                int port => {
+                    return port;
+                }
+            // Throw an error if port number is invalid
+                error err => {
+                    log:printError("Error while retriving port number, please add '-Bport = <port_number>' parameter");
+                    throw err;
+                }
+            }
+        }
+    // Throw an error if port number is invalid
+        int| null => {
+            log:printError("Error while retriving port number, please add '-Bport = <port_number>' parameter");
+            error err = {message:"Error while retriving port number, please add '-Bport = <port_number>' parameter"};
+            throw err;
+        }
     }
-    return port;
+
 }
