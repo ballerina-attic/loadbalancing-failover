@@ -57,19 +57,7 @@ The `book_store_backed` service has an independent web service that accepts orde
 #### book_search_service.bal
 The `ballerina/net.http` package contains the load balancer implementation. After importing that package you can create an endpoint with a load balancer. The `endpoint` keyword in Ballerina refers to a connection with a remote service. Here you'll have three identical remote services to load balance across. 
 
-First, create a load balancer endpoint using the following,
-```balllerina
-endpoint http:ClientEndpoint bookStoreBackends {
-    targets:[
-            // Create an array of HTTP Clients that needs to be Load balanced across
-            {uri:"http://localhost:9011/book-store"},
-            {uri:"http://localhost:9012/book-store"},
-            {uri:"http://localhost:9013/book-store"}
-            ]
-}; 
-```
-
-Here we need to add an array of HTTP clients that need to be load balanced across. Now, whenever you call the `bookStoreEndPoints` remote HTTP endpoint, it goes through the load balancer. 
+First, create an endpoint `bookStoreEndPoints` with the array of HTTP clients that need to be load balanced across. Whenever you call the `bookStoreEndPoints` remote HTTP endpoint, it goes through the load balancer. 
 
 ```ballerina
 package book_search;
