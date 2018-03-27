@@ -1,7 +1,7 @@
 # Load Balancing across Multiple Service Instances
-Load Balancing is efficiently distributing incoming network traffic across a group of backend servers. The combination of load balancing and failover techniques will create highly available systems with efficiently distributing the workload among all the available resources. Ballerina language supports load balancing out-of-the-box.
+Load balancing is efficiently distributing incoming network traffic across a group of backend servers. The combination of load balancing and failover techniques will create highly available systems that efficiently distribute the workload among all the available resources. Ballerina language supports load balancing by default.
 
-> This guide walks you through the process of adding load balancing for Ballerina programmes.
+> This guide walks you through the process of adding load balancing for Ballerina programs.
 
 The following are the sections available in this guide.
 
@@ -14,11 +14,11 @@ The following are the sections available in this guide.
 
 ## <a name="what-you-build"></a>  What you'll build
 
-You’ll build a web service with load balancing. To understand this better, you'll be mapping this with a real-world scenario of a book searching service. The book searching service will call one from the three identical bookstore backends to retrieve the book details. With this guide you'll be able to understand how the load balancing mechanism helps to balance the load among all the available remote servers.
+You’ll build a web service with load balancing. To understand this better, you'll be mapping this with a real-world scenario of a book searching service. The book searching service calls one of the three identical bookstore backends to retrieve the book details. With this guide you'll be able to understand how the load balancing mechanism helps to balance the load among all the available remote servers.
 
 ![Load Balancer](images/load_balancer_image1.png)
 
-**Request book details from book search service**: To search a new book you can use the HTTP GET request that contains the book name as a path parameter.
+**Request book details from book search service**: To search for a new book you can use the HTTP GET request that contains the book name as a path parameter.
 
 ## <a name="pre-req"></a> Prerequisites
  
@@ -30,12 +30,12 @@ You’ll build a web service with load balancing. To understand this better, you
 - Ballerina IDE plugins ([IntelliJ IDEA](https://plugins.jetbrains.com/plugin/9520-ballerina), [VSCode](https://marketplace.visualstudio.com/items?itemName=WSO2.Ballerina), [Atom](https://atom.io/packages/language-ballerina))
 - [Docker](https://docs.docker.com/engine/installation/)
 
-## <a name="developing-service"></a> Developing the RESTFul service with Load Balancer
+## <a name="developing-service"></a> Developing the RESTFul service with a load balancer
 
 ### Before you begin
 
 #### Understand the package structure
-The project structure for this guide should be as the following.
+Ballerina is a complete programming language that can have any custom project structure that you wish. Although the language allows you to have any package structure, use the following package structure for this project to follow this guide.
 
 ```
 ├── booksearchservice
@@ -44,14 +44,16 @@ The project structure for this guide should be as the following.
     └── book_store_service.bal
 ```
 
-The `booksearchservice` is the service that handles the client orders to find books from bookstores. Book search service call bookstore backends to retrieve book details. You can see that the loadbalancing technique is applied when the book search service calls one from the three identical backend servers.
+The `booksearchservice` is the service that handles the client orders to find books from bookstores. The book search service calls bookstore backends to retrieve book details. You can see that the load balancing technique is applied when the book search service calls one from the three identical backend servers.
 
-The `bookstorebacked` is an independent web service that accepts orders via HTTP POST method from `booksearchservice` and sends the details of the book back to the `booksearchservice`.
+The `bookstorebacked` service has an independent web service that accepts orders via HTTP POST method from `book_search_service` and sends the details of the book back to the `book_search_service`.
 
 ### Implementation of the Ballerina services
 
 #### book_search_service.bal
-The `ballerina.net.http.resiliency` package contains the load balancer implementation. After importing that package you can create an endpoint with a load balancer. The `endpoint` keyword in Ballerina refers to a connection with a remote service. Here you'll have three identical remote services to load balance across. First, create a LoadBalancer end point by ` create resiliency:LoadBalancer` statement. Then you need to create an array of HTTP Clients that you needs to be Loadbalanced across. Finally, pass the `resiliency:roundRobin` argument to the `create loadbalancer` constructor. Now whenever you call the `bookStoreEndPoints` remote HTTP endpoint, it goes through the load balancer. 
+The `ballerina.net.http.resiliency` package contains the load balancer implementation. After importing that package you can create an endpoint with a load balancer. The `endpoint` keyword in Ballerina refers to a connection with a remote service. Here you'll have three identical remote services to load balance across. 
+
+First, create a load balancer endpoint using the `create resiliency:LoadBalancer` statement. Then you need to create an array of HTTP clients that need to be load balanced across. Finally, pass the `resiliency:roundRobin` argument to the `create loadbalancer` constructor. Now, whenever you call the `bookStoreEndPoints` remote HTTP endpoint, it goes through the load balancer. 
 
 ```ballerina
 package booksearchservice;
@@ -67,12 +69,12 @@ service<http> bookSearchService {
         path:"/{bookName}"
     }
     resource bookSearchService (http:Connection conn, http:InRequest req, string bookName) {
-        // Define the end point to the book store backend
+        // Define the endpoint to the book store backend
         endpoint<http:HttpClient> bookStoreEndPoints {
-        // Crate a LoadBalancer end point
-        // The LoadBalancer is defined in ballerina.net.http.resiliency package
+        // Create a load balancer endpoint
+        // The load balancer is defined in the ballerina.net.http.resiliency package
             create resiliency:LoadBalancer(
-            // Create an array of HTTP Clients that needs to be Loadbalanced across
+            // Create an array of HTTP clients that need to be load balanced across
             [create http:HttpClient("http://localhost:9011/book-store", {endpointTimeout:1000}),
              create http:HttpClient("http://localhost:9012/book-store", {endpointTimeout:1000}),
              create http:HttpClient("http://localhost:9013/book-store", {endpointTimeout:1000})],
@@ -85,10 +87,10 @@ service<http> bookSearchService {
         http:HttpConnectorError httpConnectorError;
         http:OutRequest outRequest = {};
 
-        // Set the json payload with the book name
+        // Set the JSON payload with the book name
         json requestPayload = {"bookName":bookName};
         outRequest.setJsonPayload(requestPayload);
-        // Call the book store backend with loadbalancer enabled
+        // Call the book store backend with load balancer enabled
         inResponse, httpConnectorError = bookStoreEndPoints.post("/", outRequest);
         // Send the response back to the client
         http:OutResponse outResponse = {};
@@ -108,15 +110,16 @@ Refer to the complete implementaion of the orderService in the [loadbalancing-fa
 
 
 #### book_store_service.bal
-The book store service is a mock service that gives the details about the requested book. This service is a simple service that accepts,
-HTTP POST requests with following json payload
+The book store service is a mock service that gives details about the requested book. This service is a simple service that accepts
+HTTP POST requests with the following JSON payload.
+
 ```json
  {"bookName":"Name of the book"}
 ```
-and resopond with the following JSON,
+
+It then responds with the following JSON.
 
 ```json
-
 {
  "Served by Data Ceter" : "1",
  "Book Details" : {
@@ -135,12 +138,12 @@ Refer to the complete implementation of the book store service in the [loadbalan
 
 ### Try it out
 #### Load balancer
-1. Run book search service by running the following command in the terminal from the sample root directory.
+1. Run the book search service by running the following command in the terminal from the sample root directory.
     ```bash
     $ ballerina run booksearchservice/
    ```
 
-2. Next, run the three instances of the book store service. Here you have to enter the service port number in each service instance. You can pass the port number as parameter `Bport=<Port Number>`
+2. Next, run the three instances of the book store service. Here you have to enter the service port number in each service instance. You can pass the port number as parameter `Bport=<Port Number>`.
    ``` bash
    // 1st instance with port number 9011
    $ ballerina run bookstorebacked/ -Bport=9011
@@ -155,20 +158,19 @@ Refer to the complete implementation of the book store service in the [loadbalan
     // 3rd instance with port number 9013
     $ ballerina run bookstorebacked/ -Bport=9013
    ```
-   With that all the required services for this guide should be up and runninig.
+   With that, all the required services for this guide should be up and running.
   
-3. Invoke the book search service by sending the following HTTP GET request to the book search service
- 
+3. Invoke the book search service by sending the following HTTP GET request to the book search service.
    ```bash
    curl -X GET http://localhost:9090/book/Carrie
    ```
-   You should see a response silmilar to,
+   You should see a response silmilar to the following.
    ```json
    {"Served by Data Ceter":1,"Book Details":{"Title":"Carrie","Author":"Stephen King","ISBN":"978-3-16-148410-   0","Availability":"Available"}}
    ```
-   The`"Served by Data Ceter":1` entry says that 1st instance of book store backend has invoked to find the book details
+   The`"Served by Data Ceter":1` entry says that the 1st instance of book store backend has been invoked to find the book details.
 
-4. Repeat the above request for three times. You should see the responses as follows,
+4. Repeat the above request three times. You should see the responses as follows.
 
    ```json
    {"Served by Data Ceter":2,"Book Details":{"Title":"Carrie","Author":"Stephen King","ISBN":"978-3-16-148410-   0","Availability":"Available"}}
@@ -180,19 +182,18 @@ Refer to the complete implementation of the book store service in the [loadbalan
    {"Served by Data Ceter":1,"Book Details":{"Title":"Carrie","Author":"Stephen King","ISBN":"978-3-16-148410-   0","Availability":"Available"}}
    ```
 
-  You can see that the book search service has invoked book store backed with round robin load balancing pattern. The `"Served by Data Ceter"` is repeating as 1 -> 2 -> 3 -> 1 pattern.
+You can see that the book search service has invoked the book store backed with the round robin load balancing pattern. The `"Served by Data Ceter"` repeats using the following pattern: 1 -> 2 -> 3 -> 1.
 
 
 #### Load balancer: some servers down
 
-1.  Now shut down the 3rd instance of the book store service by terminating following instance,
+1.  Now shut down the third instance of the book store service by terminating the following instance.
     ```bash
     // 3rd instance with port number 9013
     $ ballerina run bookstorebacked/ -Bport=9013
     // Terminate this from the terminal
     ``` 
-2.  Then send following request repeatedly for three times,
-
+2.  Then send following request repeatedly three times,
     ```bash
     curl -X GET http://localhost:9090/book/Carrie
     ```  
@@ -207,17 +208,18 @@ Refer to the complete implementation of the book store service in the [loadbalan
     {"Served by Data Ceter":1,"Book Details":{"Title":"Carrie","Author":"Stephen King","ISBN":"978-3-16-148410-   0","Availability":"Available"}}
     ```
    
- 3.  This means that the loadbalancer is preventing the 3rd instance form invoking since we have shut down the 3rd instance. Meantime you'll see the order of `"Served by Data Ceter"` is similar to 1 -> 2 -> 1 pattern.
+4. This means that the loadbalancer is preventing the third instance from getting invoked since the third instance is shut down. In the meantime you'll see the order of `"Served by Data Ceter"` is similar to the 1 -> 2 -> 1 pattern.
  
  ### <a name="unit-testing"></a> Writing unit tests 
 
-In Ballerina, the unit test cases should be in the same package and the naming convention should be as follows,
+In Ballerina, the unit test cases should be in the same package and the naming convention should be as follows.
 * Test files should contain the _test.bal suffix.
 * Test functions should contain the test prefix.
   * e.g., testBookStoreService()
 
 This guide contains unit test cases in the respective folders. 
-To run the unit tests, go to the sample root directory and run the following command
+
+To run the unit tests, go to the sample root directory and run the following command.
 ```bash
 $ ballerina test bookstorebacked/
 ```
@@ -231,7 +233,7 @@ Once you are done with the development, you can deploy the service using any of 
 ### <a name="deploying-on-locally"></a> Deploying locally
 You can deploy the RESTful service that you developed above in your local environment. You can create the Ballerina executable archive (.balx) first and then run it in your local environment as follows.
 
-Building 
+**Building** 
    ```bash
     $ ballerina build booksearchservice/
 
@@ -239,7 +241,7 @@ Building
 
    ```
 
-Running
+**Running**
    ```bash
     $ ballerina run booksearchservice.balx
 
