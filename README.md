@@ -253,7 +253,7 @@ Navigate to `SAMPLE_ROOT/src` and run the following commands
    ```bash
     $ ballerina run book_store_backed.balx
 
-    $ ballerina run build book_search.balx -Bport=9011
+    $ ballerina run book_search.balx -Bport=9011
 
    ```
 
