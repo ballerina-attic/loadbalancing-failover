@@ -38,75 +38,84 @@ You’ll build a web service with load balancing. To understand this better, you
 Ballerina is a complete programming language that can have any custom project structure that you wish. Although the language allows you to have any package structure, use the following package structure for this project to follow this guide.
 
 ```
-├── booksearchservice
-│   └── book_search_service.bal
-└── bookstorebacked
-    └── book_store_service.bal
+└── src
+    ├── book_search
+    │   ├── book_search_service.bal
+    │   └── tests
+    │       └── book_search_service_test.bal
+    └── book_store_backed
+        └── book_store_service.bal
+
 ```
 
-The `booksearchservice` is the service that handles the client orders to find books from bookstores. The book search service calls bookstore backends to retrieve book details. You can see that the load balancing technique is applied when the book search service calls one from the three identical backend servers.
+The `book_search` is the service that handles the client orders to find books from bookstores. The book search service calls bookstore backends to retrieve book details. You can see that the load balancing technique is applied when the book search service calls one from the three identical backend servers.
 
-The `bookstorebacked` service has an independent web service that accepts orders via HTTP POST method from `book_search_service` and sends the details of the book back to the `book_search_service`.
+The `book_store_backed` service has an independent web service that accepts orders via HTTP POST method from `book_search_service.bal` and sends the details of the book back to the `book_search_service.bal`.
 
 ### Implementation of the Ballerina services
 
 #### book_search_service.bal
-The `ballerina.net.http.resiliency` package contains the load balancer implementation. After importing that package you can create an endpoint with a load balancer. The `endpoint` keyword in Ballerina refers to a connection with a remote service. Here you'll have three identical remote services to load balance across. 
+The `ballerina/net.http` package contains the load balancer implementation. After importing that package you can create an endpoint with a load balancer. The `endpoint` keyword in Ballerina refers to a connection with a remote service. Here you'll have three identical remote services to load balance across. 
 
-First, create a load balancer endpoint using the `create resiliency:LoadBalancer` statement. Then you need to create an array of HTTP clients that need to be load balanced across. Finally, pass the `resiliency:roundRobin` argument to the `create loadbalancer` constructor. Now, whenever you call the `bookStoreEndPoints` remote HTTP endpoint, it goes through the load balancer. 
+First, create an endpoint `bookStoreEndPoints` with the array of HTTP clients that need to be load balanced across. Whenever you call the `bookStoreEndPoints` remote HTTP endpoint, it goes through the load balancer. 
 
 ```ballerina
-package booksearchservice;
+package book_search;
 
-import ballerina.net.http.resiliency;
-import ballerina.net.http;
+import ballerina/net.http;
 
+// Create an endpoint with port 9090 for the book search service
+endpoint http:ServiceEndpoint bookSearchServiceEP {
+    port:9090
+};
 
-@http:configuration {basePath:"book"}
-service<http> bookSearchService {
-    @http:resourceConfig {
+// Define the end point to the book store backend
+endpoint http:ClientEndpoint bookStoreBackends {
+    targets:[
+            // Create an array of HTTP Clients that needs to be Load balanced across
+            {uri:"http://localhost:9011/book-store"},
+            {uri:"http://localhost:9012/book-store"},
+            {uri:"http://localhost:9013/book-store"}
+            ]
+};
+
+@http:ServiceConfig {basePath:"book"}
+service<http:Service> bookSearchService bind bookSearchServiceEP {
+    @http:ResourceConfig {
     // Set the bookName as a path parameter
         path:"/{bookName}"
     }
-    resource bookSearchService (http:Connection conn, http:InRequest req, string bookName) {
-        // Define the endpoint to the book store backend
-        endpoint<http:HttpClient> bookStoreEndPoints {
-        // Create a load balancer endpoint
-        // The load balancer is defined in the ballerina.net.http.resiliency package
-            create resiliency:LoadBalancer(
-            // Create an array of HTTP clients that need to be load balanced across
-            [create http:HttpClient("http://localhost:9011/book-store", {endpointTimeout:1000}),
-             create http:HttpClient("http://localhost:9012/book-store", {endpointTimeout:1000}),
-             create http:HttpClient("http://localhost:9013/book-store", {endpointTimeout:1000})],
-            // Use the round robbin load balancing algorithm
-            resiliency:roundRobin);
-        }
-
+    bookSearchService (endpoint conn, http:Request req, string bookName) {
         // Initialize the request and response messages for the remote call
-        http:InResponse inResponse = {};
-        http:HttpConnectorError httpConnectorError;
-        http:OutRequest outRequest = {};
+        http:Request outRequest = {};
+        http:Response outResponse = {};
 
-        // Set the JSON payload with the book name
+        // Set the json payload with the book name
         json requestPayload = {"bookName":bookName};
         outRequest.setJsonPayload(requestPayload);
-        // Call the book store backend with load balancer enabled
-        inResponse, httpConnectorError = bookStoreEndPoints.post("/", outRequest);
-        // Send the response back to the client
-        http:OutResponse outResponse = {};
-        if (httpConnectorError != null) {
-            outResponse.statusCode = httpConnectorError.statusCode;
-            outResponse.setStringPayload(httpConnectorError.message);
-            _ = conn.respond(outResponse);
-        } else {
-            _ = conn.forward(inResponse);
+        // Call the book store backend with load balancer
+        var backendResponse = bookStoreBackends -> post("/", outRequest);
+        // Match the response from the backed to check whether the response received
+        match backendResponse {
+        // Check the response is a http response
+            http:Response inResponse => {
+            // forward the response received from book store back end to client
+                _ = conn -> forward(inResponse);
+            }
+            http:HttpConnectorError httpConnectorError => {
+            // Send the response back to the client if book store back end fails
+                outResponse.statusCode = httpConnectorError.statusCode;
+                outResponse.setStringPayload(httpConnectorError.message);
+                _ = conn -> respond(outResponse);
+            }
         }
     }
 }
 
+
 ```
 
-Refer to the complete implementaion of the orderService in the [loadbalancing-failover/booksearchservice/book_search_service.bal](/booksearchservice/book_search_service.bal) file.
+Refer to the complete implementaion of the orderService in the [loadbalancing-failover/booksearchservice/book_search_service.bal](/src/book_search/book_search_service.bal) file.
 
 
 #### book_store_service.bal
@@ -131,14 +140,14 @@ It then responds with the following JSON.
 }
 ```
 
-Refer to the complete implementation of the book store service in the [loadbalance-failover/bookstorebacked/book_store_service.bal](bookstorebacked/book_store_service.bal) file.
+Refer to the complete implementation of the book store service in the [loadbalance-failover/bookstorebacked/book_store_service.bal](src/book_store_backed/book_store_service.bal) file.
 
 ## <a name="testing"></a> Testing 
 
 
 ### Try it out
 #### Load balancer
-1. Run the book search service by running the following command in the terminal from the sample root directory.
+1. Run the book search service by running the following command in the terminal from the `SAMPLE_ROOT/src` directory.
     ```bash
     $ ballerina run booksearchservice/
    ```
@@ -212,19 +221,17 @@ You can see that the book search service has invoked the book store backed with 
  
  ### <a name="unit-testing"></a> Writing unit tests 
 
-In Ballerina, the unit test cases should be in the same package and the naming convention should be as follows.
+In Ballerina, the unit test cases should be in the same package under the `tests` folder .
+The naming convention should be as follows.
 * Test files should contain the _test.bal suffix.
 * Test functions should contain the test prefix.
   * e.g., testBookStoreService()
 
 This guide contains unit test cases in the respective folders. 
 
-To run the unit tests, go to the sample root directory and run the following command.
+To run the unit tests, go to the `SAMPLE_ROOT/src` and run the following command.
 ```bash
-$ ballerina test bookstorebacked/
-```
-```bash
-$ ballerina test booksearchservice/
+$ ballerina test
 ```
 ## <a name="deploying-the-scenario"></a> Deployment
 
@@ -234,18 +241,19 @@ Once you are done with the development, you can deploy the service using any of 
 You can deploy the RESTful service that you developed above in your local environment. You can create the Ballerina executable archive (.balx) first and then run it in your local environment as follows.
 
 **Building** 
+Navigate to `SAMPLE_ROOT/src` and run the following commands
    ```bash
-    $ ballerina build booksearchservice/
+    $ ballerina build book_store_backed/
 
-    $ ballerina build bookstorebacked/
+    $ ballerina build book_search/
 
    ```
 
 **Running**
    ```bash
-    $ ballerina run booksearchservice.balx
+    $ ballerina run book_store_backed.balx
 
-    $ ballerina run bookstorebacked.balx -Bport=9011
+    $ ballerina run book_search.balx -Bport=9011
 
    ```
 
