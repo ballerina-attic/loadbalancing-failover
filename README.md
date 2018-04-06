@@ -1,4 +1,5 @@
-# Load Balancing across Multiple Service Instances
+[![Build Status](https://travis-ci.org/rosensilva/loadbalancing-failover.svg?branch=master)](https://travis-ci.org/rosensilva/loadbalancing-failover)
+# Load Balancing 
 Load balancing is efficiently distributing incoming network traffic across a group of backend servers. The combination of load balancing and failover techniques will create highly available systems that efficiently distribute the workload among all the available resources. Ballerina language supports load balancing by default.
 
 > This guide walks you through the process of adding load balancing for Ballerina programs.
