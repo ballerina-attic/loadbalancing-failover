@@ -311,7 +311,6 @@ This will also create the corresponding docker image using the docker annotation
  
     ```
    curl -X GET http://localhost:9090/book/Carrie
-   
     ```
 
 
@@ -370,7 +369,6 @@ This will also create the corresponding docker image and the Kubernetes artifact
   
   Run following command to deploy kubernetes artifacts:  
   kubectl apply -f ./target/book_search/kubernetes
- 
   ```
 
 - You can verify that the docker image that we specified in `` @kubernetes:Deployment `` is created, by using `` docker ps images ``. 
@@ -382,7 +380,6 @@ This will also create the corresponding docker image and the Kubernetes artifact
    deployment.extensions "ballerina-guides-book-search-service" created
    ingress.extensions "ballerina-guides-book-search-service" created
    service "ballerina-guides-book-search-service" created
-
 ```
 
 - You can verify Kubernetes deployment, service and ingress are running properly, by using following Kubernetes commands. 
@@ -391,7 +388,6 @@ $kubectl get service
 $kubectl get deploy
 $kubectl get pods
 $kubectl get ingress
-
 ```
 
 - If everything is successfully deployed, you can invoke the service either via Node port or ingress. 
@@ -400,7 +396,6 @@ Node Port:
  
 ```
  curl -X GET http://<Minikube_host_IP>:<Node_Port>/book/Carrie
-
 ```
 Ingress:
 
@@ -412,8 +407,7 @@ Add `/etc/hosts` entry to match hostname.
 Access the service 
 
 ``` 
- curl -X GET http://ballerina.guides.io/book/Carrie
-    
+ curl -X GET http://ballerina.guides.io/book/Carrie 
 ```
 
 
