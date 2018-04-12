@@ -10,7 +10,7 @@ The following are the sections available in this guide.
 - [Prerequisites](#prerequisites)
 - [Developing the RESTFul service with load balancing and failover](#developing-the-restul-service-with-a-load-balancer)
 - [Testing](#testing)
-- [Deployment](#Deployment)
+- [Deployment](#deployment)
 
 ## What you'll build
 
