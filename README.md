@@ -6,14 +6,13 @@ Load balancing is efficiently distributing incoming network traffic across a gro
 
 The following are the sections available in this guide.
 
-- [What you'll build](#what-you-build)
-- [Prerequisites](#pre-req)
-- [Developing the RESTFul service with load balancing and failover](#developing-service)
+- [What you'll build](#what-youll-build)
+- [Prerequisites](#prerequisites)
+- [Developing the RESTFul service with load balancing and failover](#developing-the-restul-service-with-a-load-balancer)
 - [Testing](#testing)
-- [Deployment](#deploying-the-scenario)
-- [Observability](#observability)
+- [Deployment](#Deployment)
 
-## <a name="what-you-build"></a>  What you'll build
+## What you'll build
 
 You’ll build a web service with load balancing. To understand this better, you'll be mapping this with a real-world scenario of a book searching service. The book searching service calls one of the three identical bookstore backends to retrieve the book details. With this guide you'll be able to understand how the load balancing mechanism helps to balance the load among all the available remote servers.
 
@@ -22,7 +21,7 @@ You’ll build a web service with load balancing. To understand this better, you
 
 **Request book details from book search service**: To search for a new book you can use the HTTP GET request that contains the book name as a path parameter.
 
-## <a name="pre-req"></a> Prerequisites
+## Prerequisites
  
 - JDK 1.8 or later
 - [Ballerina Distribution](https://github.com/ballerina-lang/ballerina/blob/master/docs/quick-tour.md)
@@ -32,7 +31,7 @@ You’ll build a web service with load balancing. To understand this better, you
 - Ballerina IDE plugins ([IntelliJ IDEA](https://plugins.jetbrains.com/plugin/9520-ballerina), [VSCode](https://marketplace.visualstudio.com/items?itemName=WSO2.Ballerina), [Atom](https://atom.io/packages/language-ballerina))
 - [Docker](https://docs.docker.com/engine/installation/)
 
-## <a name="developing-service"></a> Developing the RESTFul service with a load balancer
+## Developing the RESTFul service with a load balancer
 
 ### Before you begin
 
@@ -74,20 +73,20 @@ endpoint http:ServiceEndpoint bookSearchServiceEP {
 // Define the end point to the book store backend
 endpoint http:ClientEndpoint bookStoreBackends {
     targets:[
-            // Create an array of HTTP Clients that needs to be Load balanced across
-            {uri:"http://localhost:9011/book-store"},
-            {uri:"http://localhost:9012/book-store"},
-            {uri:"http://localhost:9013/book-store"}
-            ]
+    // Create an array of HTTP Clients that needs to be Load balanced across
+        {uri:"http://localhost:9011/book-store"},
+        {uri:"http://localhost:9012/book-store"},
+        {uri:"http://localhost:9013/book-store"}
+    ]
 };
 
 @http:ServiceConfig {basePath:"book"}
 service<http:Service> bookSearchService bind bookSearchServiceEP {
     @http:ResourceConfig {
-    // Set the bookName as a path parameter
+        // Set the bookName as a path parameter
         path:"/{bookName}"
     }
-    bookSearchService (endpoint conn, http:Request req, string bookName) {
+    bookSearchService(endpoint conn, http:Request req, string bookName) {
         // Initialize the request and response messages for the remote call
         http:Request outRequest = {};
         http:Response outResponse = {};
@@ -99,13 +98,13 @@ service<http:Service> bookSearchService bind bookSearchServiceEP {
         var backendResponse = bookStoreBackends -> post("/", outRequest);
         // Match the response from the backed to check whether the response received
         match backendResponse {
-        // Check the response is a http response
+            // Check the response is a http response
             http:Response inResponse => {
-            // forward the response received from book store back end to client
+                // forward the response received from book store back end to client
                 _ = conn -> forward(inResponse);
             }
             http:HttpConnectorError httpConnectorError => {
-            // Send the response back to the client if book store back end fails
+                // Send the response back to the client if book store back end fails
                 outResponse.statusCode = httpConnectorError.statusCode;
                 outResponse.setStringPayload(httpConnectorError.message);
                 _ = conn -> respond(outResponse);
@@ -113,8 +112,6 @@ service<http:Service> bookSearchService bind bookSearchServiceEP {
         }
     }
 }
-
-
 ```
 
 Refer to the complete implementaion of the orderService in the [loadbalancing-failover/booksearchservice/book_search_service.bal](/src/book_search/book_search_service.bal) file.
@@ -144,7 +141,7 @@ It then responds with the following JSON.
 
 Refer to the complete implementation of the book store service in the [loadbalance-failover/bookstorebacked/book_store_service.bal](src/book_store_backed/book_store_service.bal) file.
 
-## <a name="testing"></a> Testing 
+## Testing 
 
 
 ### Try it out
@@ -221,7 +218,7 @@ You can see that the book search service has invoked the book store backed with 
    
 4. This means that the loadbalancer is preventing the third instance from getting invoked since the third instance is shut down. In the meantime you'll see the order of `"Served by Data Ceter"` is similar to the 1 -> 2 -> 1 pattern.
  
- ### <a name="unit-testing"></a> Writing unit tests 
+ ### Writing unit tests 
 
 In Ballerina, the unit test cases should be in the same package under the `tests` folder .
 The naming convention should be as follows.
@@ -235,11 +232,11 @@ To run the unit tests, go to the `SAMPLE_ROOT/src` and run the following command
 ```bash
 $ ballerina test
 ```
-## <a name="deploying-the-scenario"></a> Deployment
+## Deployment
 
 Once you are done with the development, you can deploy the service using any of the methods listed below. 
 
-### <a name="deploying-on-locally"></a> Deploying locally
+### Deploying locally
 You can deploy the RESTful service that you developed above in your local environment. You can create the Ballerina executable archive (.balx) first and then run it in your local environment as follows.
 
 **Building** 
@@ -259,7 +256,7 @@ Navigate to `SAMPLE_ROOT/src` and run the following commands
 
    ```
 
-### <a name="deploying-on-docker"></a> Deploying on Docker
+### Deploying on Docker
 
 You can run the services that we developed above as a docker container. As Ballerina platform offers native support for running ballerina programs on containers, you just need to put the corresponding docker annotations on your service code. 
 Let's see how we can deploy the book_search_service we developed above on docker. 
@@ -314,7 +311,7 @@ This will also create the corresponding docker image using the docker annotation
     ```
 
 
-### <a name="deploying-on-k8s"></a> Deploying on Kubernetes
+### Deploying on Kubernetes
 
 - You can run the services that we developed above, on Kubernetes. The Ballerina language offers native support for running a ballerina programs on Kubernetes, 
 with the use of Kubernetes annotations that you can include as part of your service code. Also, it will take care of the creation of the docker images. 
@@ -409,16 +406,3 @@ Access the service
 ``` 
  curl -X GET http://ballerina.guides.io/book/Carrie 
 ```
-
-
-## <a name="observability"></a> Observability 
-
-### <a name="logging"></a> Logging
-(Work in progress) 
-
-### <a name="metrics"></a> Metrics
-(Work in progress) 
-
-
-### <a name="tracing"></a> Tracing 
-(Work in progress) 
