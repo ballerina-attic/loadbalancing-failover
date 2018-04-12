@@ -245,7 +245,6 @@ Navigate to `SAMPLE_ROOT/src` and run the following commands
     $ ballerina build book_store_backed/
 
     $ ballerina build book_search/
-
    ```
 
 **Running**
@@ -253,7 +252,6 @@ Navigate to `SAMPLE_ROOT/src` and run the following commands
     $ ballerina run book_store_backed.balx
 
     $ ballerina run book_search.balx -Bport=9011
-
    ```
 
 ### Deploying on Docker
@@ -284,7 +282,6 @@ endpoint http:ServiceEndpoint bookSearchServiceEP {
 
 @http:ServiceConfig {basePath:"book"}
 service<http:Service> bookSearchService bind bookSearchServiceEP {
-   
 ``` 
 
 - Now you can build a Ballerina executable archive (.balx) of the service that we developed above, using the following command. It points to the service file that we developed above and it will create an executable binary out of that. 
@@ -352,8 +349,8 @@ endpoint http:ServiceEndpoint bookSearchServiceEP {
 
 @http:ServiceConfig {basePath:"book"}
 service<http:Service> bookSearchService bind bookSearchServiceEP {
-        
 ``` 
+
 - Here we have used ``  @kubernetes:Deployment `` to specify the docker image name which will be created as part of building this service. 
 - We have also specified `` @kubernetes:Service {} `` so that it will create a Kubernetes service which will expose the Ballerina service that is running on a Pod.  
 - In addition we have used `` @kubernetes:Ingress `` which is the external interface to access your service (with path `` /`` and host name ``ballerina.guides.io``)
