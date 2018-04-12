@@ -8,7 +8,7 @@ The following are the sections available in this guide.
 
 - [What you'll build](#what-youll-build)
 - [Prerequisites](#prerequisites)
-- [Developing the RESTFul service with load balancing and failover](#developing-the-restul-service-with-a-load-balancer)
+- [Developing the RESTFul service with load balancing and failover](#developing-the-restful-service-with-a-load-balancer)
 - [Testing](#testing)
 - [Deployment](#deployment)
 
