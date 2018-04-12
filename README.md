@@ -174,20 +174,24 @@ Refer to the complete implementation of the book store service in the [loadbalan
    ```
    You should see a response silmilar to the following.
    ```json
-   {"Served by Data Ceter":1,"Book Details":{"Title":"Carrie","Author":"Stephen King","ISBN":"978-3-16-148410-   0","Availability":"Available"}}
+   {"Served by Data Ceter":1,"Book Details":{"Title":"Carrie","Author":"Stephen King"
+   ,"ISBN":"978-3-16-148410-   0","Availability":"Available"}}
    ```
    The`"Served by Data Ceter":1` entry says that the 1st instance of book store backend has been invoked to find the book details.
 
 4. Repeat the above request three times. You should see the responses as follows.
 
    ```json
-   {"Served by Data Ceter":2,"Book Details":{"Title":"Carrie","Author":"Stephen King","ISBN":"978-3-16-148410-   0","Availability":"Available"}}
+   {"Served by Data Ceter":2,"Book Details":{"Title":"Carrie","Author":"Stephen King",
+   "ISBN":"978-3-16-148410-   0","Availability":"Available"}}
    ```
    ```json
-   {"Served by Data Ceter":3,"Book Details":{"Title":"Carrie","Author":"Stephen King","ISBN":"978-3-16-148410-   0","Availability":"Available"}}
+   {"Served by Data Ceter":3,"Book Details":{"Title":"Carrie","Author":"Stephen King",
+   "ISBN":"978-3-16-148410-   0","Availability":"Available"}}
    ```
    ```json
-   {"Served by Data Ceter":1,"Book Details":{"Title":"Carrie","Author":"Stephen King","ISBN":"978-3-16-148410-   0","Availability":"Available"}}
+   {"Served by Data Ceter":1,"Book Details":{"Title":"Carrie","Author":"Stephen King",
+   "ISBN":"978-3-16-148410-   0","Availability":"Available"}}
    ```
 
 You can see that the book search service has invoked the book store backed with the round robin load balancing pattern. The `"Served by Data Ceter"` repeats using the following pattern: 1 -> 2 -> 3 -> 1.
@@ -207,13 +211,16 @@ You can see that the book search service has invoked the book store backed with 
     ```  
 3.  The responses for above requests should look similar to,
     ```json
-    {"Served by Data Ceter":1,"Book Details":{"Title":"Carrie","Author":"Stephen King","ISBN":"978-3-16-148410-    0","Availability":"Available"}}
+    {"Served by Data Ceter":1,"Book Details":{"Title":"Carrie","Author":"Stephen King",
+    "ISBN":"978-3-16-148410-    0","Availability":"Available"}}
     ```
     ```json
-    {"Served by Data Ceter":2,"Book Details":{"Title":"Carrie","Author":"Stephen King","ISBN":"978-3-16-148410-   0","Availability":"Available"}}
+    {"Served by Data Ceter":2,"Book Details":{"Title":"Carrie","Author":"Stephen King",
+    "ISBN":"978-3-16-148410-   0","Availability":"Available"}}
     ```
     ```json
-    {"Served by Data Ceter":1,"Book Details":{"Title":"Carrie","Author":"Stephen King","ISBN":"978-3-16-148410-   0","Availability":"Available"}}
+    {"Served by Data Ceter":1,"Book Details":{"Title":"Carrie","Author":"Stephen King",
+    "ISBN":"978-3-16-148410-   0","Availability":"Available"}}
     ```
    
 4. This means that the loadbalancer is preventing the third instance from getting invoked since the third instance is shut down. In the meantime you'll see the order of `"Served by Data Ceter"` is similar to the 1 -> 2 -> 1 pattern.
