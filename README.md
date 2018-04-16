@@ -16,7 +16,7 @@ The following are the sections available in this guide.
 
 You’ll build a web service with load balancing. To understand this better, you'll be mapping this with a real-world scenario of a book searching service. The book searching service calls one of the three identical bookstore backends to retrieve the book details. With this guide you'll be able to understand how the load balancing mechanism helps to balance the load among all the available remote servers.
 
-![Load Balancer-1](images/loadbalancing-failover-1.png)
+![Load Balancer-1](images/loadbalancing-failover-1.svg)
 ![Load Balancer-2](images/loadbalancing-failover-2.png)
 
 **Request book details from book search service**: To search for a new book you can use the HTTP GET request that contains the book name as a path parameter.
