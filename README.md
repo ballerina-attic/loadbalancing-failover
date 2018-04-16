@@ -61,22 +61,19 @@ The `ballerina/net.http` package contains the load balancer implementation. Afte
 First, create an endpoint `bookStoreEndPoints` with the array of HTTP clients that need to be load balanced across. Whenever you call the `bookStoreEndPoints` remote HTTP endpoint, it goes through the load balancer. 
 
 ```ballerina
-package book_search;
+import ballerina/http;
 
-import ballerina/net.http;
-
-// Create an endpoint with port 9090 for the book search service
-endpoint http:ServiceEndpoint bookSearchServiceEP {
+endpoint http:Listener bookSearchServiceEP {
     port:9090
 };
 
 // Define the end point to the book store backend
-endpoint http:ClientEndpoint bookStoreBackends {
+endpoint http:Client bookStoreBackends {
     targets:[
     // Create an array of HTTP Clients that needs to be Load balanced across
-        {uri:"http://localhost:9011/book-store"},
-        {uri:"http://localhost:9012/book-store"},
-        {uri:"http://localhost:9013/book-store"}
+        {url:"http://localhost:9011/book-store"},
+        {url:"http://localhost:9012/book-store"},
+        {url:"http://localhost:9013/book-store"}
     ]
 };
 
@@ -88,8 +85,8 @@ service<http:Service> bookSearchService bind bookSearchServiceEP {
     }
     bookSearchService(endpoint conn, http:Request req, string bookName) {
         // Initialize the request and response messages for the remote call
-        http:Request outRequest = {};
-        http:Response outResponse = {};
+        http:Request outRequest;
+        http:Response outResponse;
 
         // Set the json payload with the book name
         json requestPayload = {"bookName":bookName};
@@ -101,7 +98,7 @@ service<http:Service> bookSearchService bind bookSearchServiceEP {
             // Check the response is a http response
             http:Response inResponse => {
                 // forward the response received from book store back end to client
-                _ = conn -> forward(inResponse);
+                _ = conn -> respond(inResponse);
             }
             http:HttpConnectorError httpConnectorError => {
                 // Send the response back to the client if book store back end fails
