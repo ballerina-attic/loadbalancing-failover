@@ -1,13 +1,13 @@
 package book_search;
 
-import ballerina/net.http;
+import ballerina/http;
 import ballerina/test;
 import ballerina/mime;
 
-endpoint http:ClientEndpoint httpEndpoint {
+endpoint http:Client httpEndpoint {
     targets:[
             {
-                uri:"http://localhost:9090/book"
+                url:"http://localhost:9090/book"
             }
             ]
 };
@@ -17,7 +17,7 @@ function beforeFunction () {
     _ = test:startServices("book_search");
 }
 
-function afterFunc () {
+function afterFunction () {
     // Stop the book search service
     test:stopServices("book_search");
 }
@@ -28,11 +28,10 @@ function afterFunc () {
 }
 function testInventoryService () {
     // Initialize the empty http request and response
-    http:Request req = {};
-    string ad = "dsds";
+    http:Request req;
     // Test the book search resource
     // Send the request to service and get the response
-    http:Response resp =? httpEndpoint -> post("/Aladin", req);
+    http:Response resp = check httpEndpoint -> post("/Aladin", req);
     test:assertEquals(resp.statusCode, 500, msg = "Book search service didnot respond with 200 OK signal");
     var result = resp.getStringPayload();
     match result {
@@ -42,7 +41,7 @@ function testInventoryService () {
                             msg = "respond mismatch");
 
         }
-        mime:EntityError| null => { return; }
+        mime:EntityError| () => { return; }
     }
 }
 

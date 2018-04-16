@@ -16,7 +16,7 @@
 
 package book_search;
 
-import ballerina/net.http;
+import ballerina/http;
 //import ballerinax/docker;
 //import ballerinax/kubernetes;
 
@@ -43,30 +43,30 @@ import ballerina/net.http;
 //}
 
 // Create an endpoint with port 9090 for the book search service
-endpoint http:ServiceEndpoint bookSearchServiceEP {
+endpoint http:Listener bookSearchServiceEP {
     port:9090
 };
 
 // Define the end point to the book store backend
-endpoint http:ClientEndpoint bookStoreBackends {
+endpoint http:Client bookStoreBackends {
     targets:[
-            // Create an array of HTTP Clients that needs to be Load balanced across
-            {uri:"http://localhost:9011/book-store"},
-            {uri:"http://localhost:9012/book-store"},
-            {uri:"http://localhost:9013/book-store"}
-            ]
+    // Create an array of HTTP Clients that needs to be Load balanced across
+        {url:"http://localhost:9011/book-store"},
+        {url:"http://localhost:9012/book-store"},
+        {url:"http://localhost:9013/book-store"}
+    ]
 };
 
 @http:ServiceConfig {basePath:"book"}
 service<http:Service> bookSearchService bind bookSearchServiceEP {
     @http:ResourceConfig {
-    // Set the bookName as a path parameter
+        // Set the bookName as a path parameter
         path:"/{bookName}"
     }
-    bookSearchService (endpoint conn, http:Request req, string bookName) {
+    bookSearchService(endpoint conn, http:Request req, string bookName) {
         // Initialize the request and response messages for the remote call
-        http:Request outRequest = {};
-        http:Response outResponse = {};
+        http:Request outRequest;
+        http:Response outResponse;
 
         // Set the json payload with the book name
         json requestPayload = {"bookName":bookName};
@@ -75,13 +75,13 @@ service<http:Service> bookSearchService bind bookSearchServiceEP {
         var backendResponse = bookStoreBackends -> post("/", outRequest);
         // Match the response from the backed to check whether the response received
         match backendResponse {
-        // Check the response is a http response
+            // Check the response is a http response
             http:Response inResponse => {
-            // forward the response received from book store back end to client
-                _ = conn -> forward(inResponse);
+                // forward the response received from book store back end to client
+                _ = conn -> respond(inResponse);
             }
             http:HttpConnectorError httpConnectorError => {
-            // Send the response back to the client if book store back end fails
+                // Send the response back to the client if book store back end fails
                 outResponse.statusCode = httpConnectorError.statusCode;
                 outResponse.setStringPayload(httpConnectorError.message);
                 _ = conn -> respond(outResponse);
