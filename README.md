@@ -296,8 +296,9 @@ This will also create the corresponding docker image using the docker annotation
   
 ```
 $ballerina build book_search
-
+```
 Run following command to start docker container: 
+```
 docker run -d -p 9090:9090 ballerina.guides.io/book_search_service:v1.0
 ```
 - Once you successfully build the docker image, you can run it with the `` docker run`` command that is shown in the previous step.  
@@ -367,8 +368,9 @@ This will also create the corresponding docker image and the Kubernetes artifact
   
 ```
 $ballerina build book_search
-
+```
 Run following command to deploy kubernetes artifacts:  
+```
 kubectl apply -f ./target/book_search/kubernetes
 ```
 
