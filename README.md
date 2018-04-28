@@ -16,8 +16,8 @@ The following are the sections available in this guide.
 
 You’ll build a web service with load balancing. To understand this better, you'll be mapping this with a real-world scenario of a book searching service. The book searching service calls one of the three identical bookstore backends to retrieve the book details. With this guide you'll be able to understand how the load balancing mechanism helps to balance the load among all the available remote servers.
 
-![Load Balancer-1](images/loadbalancing-failover-1.png)
-![Load Balancer-2](images/loadbalancing-failover-2.png)
+![Load Balancer-1](images/loadbalancing-failover-1.svg)
+![Load Balancer-2](images/loadbalancing-failover-2.svg)
 
 **Request book details from book search service**: To search for a new book you can use the HTTP GET request that contains the book name as a path parameter.
 
@@ -143,54 +143,52 @@ Refer to the complete implementation of the book store service in the [loadbalan
 
 ### Try it out
 #### Load balancer
-- Run the book search service by running the following command in the terminal from the `SAMPLE_ROOT/src` directory.
+1. Run the book search service by running the following command in the terminal from the `SAMPLE_ROOT/src` directory.
 ```bash
-    $ ballerina run booksearchservice/
+$ ballerina run booksearchservice/
 ```
 
-- Next, run the three instances of the book store service. Here you have to enter the service port number in each service instance. You can pass the port number as parameter `Bport=<Port Number>`.
+2. Next, run the three instances of the book store service. Here you have to enter the service port number in each service instance. You can pass the port number as parameter `Bport=<Port Number>`.
 ``` bash
-   // 1st instance with port number 9011
-   $ ballerina run bookstorebacked/ -Bport=9011
+// 1st instance with port number 9011
+$ ballerina run bookstorebacked/ -Bport=9011
 ```
-   
+
 ``` bash
-    // 2nd instance with port number 9012
-    $ ballerina run bookstorebacked/ -Bport=9012
+// 2nd instance with port number 9012
+$ ballerina run bookstorebacked/ -Bport=9012
 ```
-   
+
 ``` bash
-    // 3rd instance with port number 9013
-    $ ballerina run bookstorebacked/ -Bport=9013
+// 3rd instance with port number 9013
+$ ballerina run bookstorebacked/ -Bport=9013
 ```
    With that, all the required services for this guide should be up and running.
   
-- Invoke the book search service by sending the following HTTP GET request to the book search service.
+3. Invoke the book search service by sending the following HTTP GET request to the book search service.
 ```bash
-   curl -X GET http://localhost:9090/book/Carrie
+curl -X GET http://localhost:9090/book/Carrie
 ```
-   You should see a response silmilar to the following.
+You should see a response silmilar to the following.
 ```json
-   {"Served by Data Ceter":1,"Book Details":{"Title":"Carrie","Author":"Stephen King"
-   ,"ISBN":"978-3-16-148410-   0","Availability":"Available"}}
+{"Served by Data Ceter":1,"Book Details":{"Title":"Carrie","Author":"Stephen King"
+,"ISBN":"978-3-16-148410-   0","Availability":"Available"}}
 ```
    The`"Served by Data Ceter":1` entry says that the 1st instance of book store backend has been invoked to find the book details.
 
 - Repeat the above request three times. You should see the responses as follows.
 
 ```json
-   {"Served by Data Ceter":2,"Book Details":{"Title":"Carrie","Author":"Stephen King",
-   "ISBN":"978-3-16-148410-   0","Availability":"Available"}}
+{"Served by Data Ceter":2,"Book Details":{"Title":"Carrie","Author":"Stephen King",
+"ISBN":"978-3-16-148410-   0","Availability":"Available"}}
 ```
-
 ```json
-   {"Served by Data Ceter":3,"Book Details":{"Title":"Carrie","Author":"Stephen King",
-   "ISBN":"978-3-16-148410-   0","Availability":"Available"}}
+{"Served by Data Ceter":3,"Book Details":{"Title":"Carrie","Author":"Stephen King",
+"ISBN":"978-3-16-148410-   0","Availability":"Available"}}
 ```
-
 ```json
-   {"Served by Data Ceter":1,"Book Details":{"Title":"Carrie","Author":"Stephen King",
-   "ISBN":"978-3-16-148410-   0","Availability":"Available"}}
+{"Served by Data Ceter":1,"Book Details":{"Title":"Carrie","Author":"Stephen King",
+"ISBN":"978-3-16-148410-   0","Availability":"Available"}}
 ```
 
 You can see that the book search service has invoked the book store backed with the round robin load balancing pattern. The `"Served by Data Ceter"` repeats using the following pattern: 1 -> 2 -> 3 -> 1.
@@ -198,33 +196,33 @@ You can see that the book search service has invoked the book store backed with 
 
 #### Load balancer: some servers down
 
--  Now shut down the third instance of the book store service by terminating the following instance.
+1.  Now shut down the third instance of the book store service by terminating the following instance.
 ```bash
-    // 3rd instance with port number 9013
-    $ ballerina run bookstorebacked/ -Bport=9013
-    // Terminate this from the terminal
+// 3rd instance with port number 9013
+$ ballerina run bookstorebacked/ -Bport=9013
+// Terminate this from the terminal
 ``` 
--  Then send following request repeatedly three times,
+2.  Then send following request repeatedly three times,
 ```bash
-    curl -X GET http://localhost:9090/book/Carrie
+curl -X GET http://localhost:9090/book/Carrie
 ```  
--  The responses for above requests should look similar to,
+3.  The responses for above requests should look similar to,
 ```json
-    {"Served by Data Ceter":1,"Book Details":{"Title":"Carrie","Author":"Stephen King",
-    "ISBN":"978-3-16-148410-    0","Availability":"Available"}}
+{"Served by Data Ceter":1,"Book Details":{"Title":"Carrie","Author":"Stephen King",
+"ISBN":"978-3-16-148410-    0","Availability":"Available"}}
 ```
 ```json
-    {"Served by Data Ceter":2,"Book Details":{"Title":"Carrie","Author":"Stephen King",
-    "ISBN":"978-3-16-148410-   0","Availability":"Available"}}
+{"Served by Data Ceter":2,"Book Details":{"Title":"Carrie","Author":"Stephen King",
+"ISBN":"978-3-16-148410-   0","Availability":"Available"}}
 ```
 ```json
-    {"Served by Data Ceter":1,"Book Details":{"Title":"Carrie","Author":"Stephen King",
-    "ISBN":"978-3-16-148410-   0","Availability":"Available"}}
+{"Served by Data Ceter":1,"Book Details":{"Title":"Carrie","Author":"Stephen King",
+"ISBN":"978-3-16-148410-   0","Availability":"Available"}}
 ```
    
 - This means that the loadbalancer is preventing the third instance from getting invoked since the third instance is shut down. In the meantime you'll see the order of `"Served by Data Ceter"` is similar to the 1 -> 2 -> 1 pattern.
  
- ### Writing unit tests 
+### Writing unit tests 
 
 In Ballerina, the unit test cases should be in the same package under the `tests` folder .
 The naming convention should be as follows.
@@ -248,16 +246,16 @@ You can deploy the RESTful service that you developed above in your local enviro
 **Building** 
 Navigate to `SAMPLE_ROOT/src` and run the following commands
 ```bash
-    $ ballerina build book_store_backed/
+$ ballerina build book_store_backed/
 
-    $ ballerina build book_search/
+$ ballerina build book_search/
 ```
 
 **Running**
 ```bash
-    $ ballerina run book_store_backed.balx
+$ ballerina run book_store_backed.balx
 
-    $ ballerina run book_search.balx -Bport=9011
+$ ballerina run book_search.balx -Bport=9011
 ```
 
 ### Deploying on Docker
@@ -294,15 +292,16 @@ service<http:Service> bookSearchService bind bookSearchServiceEP {
 This will also create the corresponding docker image using the docker annotations that you have configured above. Navigate to the `<SAMPLE_ROOT>/src/` folder and run the following command.  
   
 ```
-  $ballerina build book_search
-  
-  Run following command to start docker container: 
-  docker run -d -p 9090:9090 ballerina.guides.io/book_search_service:v1.0
+$ballerina build book_search
+```
+Run following command to start docker container: 
+```
+docker run -d -p 9090:9090 ballerina.guides.io/book_search_service:v1.0
 ```
 - Once you successfully build the docker image, you can run it with the `` docker run`` command that is shown in the previous step.  
 
 ```   
-    docker run -d -p 9090:9090 ballerina.guides.io/book_search_service:v1.0
+docker run -d -p 9090:9090 ballerina.guides.io/book_search_service:v1.0
 ```
     Here we run the docker image with flag`` -p <host_port>:<container_port>`` so that we use the host port 9090 and the container port 9090. Therefore you can access the service through the host port. 
 
@@ -310,7 +309,7 @@ This will also create the corresponding docker image using the docker annotation
 - You can access the service using the same curl commands that we've used above. 
  
 ```
-   curl -X GET http://localhost:9090/book/Carrie
+curl -X GET http://localhost:9090/book/Carrie
 ```
 
 
@@ -365,10 +364,11 @@ service<http:Service> bookSearchService bind bookSearchServiceEP {
 This will also create the corresponding docker image and the Kubernetes artifacts using the Kubernetes annotations that you have configured above.
   
 ```
-  $ballerina build book_search
-  
-  Run following command to deploy kubernetes artifacts:  
-  kubectl apply -f ./target/book_search/kubernetes
+$ballerina build book_search
+```
+Run following command to deploy kubernetes artifacts:  
+```
+kubectl apply -f ./target/book_search/kubernetes
 ```
 
 - You can verify that the docker image that we specified in `` @kubernetes:Deployment `` is created, by using `` docker ps images ``. 
