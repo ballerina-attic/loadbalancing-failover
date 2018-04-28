@@ -111,7 +111,7 @@ service<http:Service> bookSearchService bind bookSearchServiceEP {
 }
 ```
 
-Refer to the complete implementaion of the orderService in the [loadbalancing-failover/booksearchservice/book_search_service.bal](/src/book_search/book_search_service.bal) file.
+Refer to the complete implementaion of the orderService in the [loadbalancing-failover/booksearchservice/book_search_service.bal](/guide/book_search/book_search_service.bal) file.
 
 
 #### book_store_service.bal
@@ -136,7 +136,7 @@ It then responds with the following JSON.
 }
 ```
 
-Refer to the complete implementation of the book store service in the [loadbalance-failover/bookstorebacked/book_store_service.bal](src/book_store_backed/book_store_service.bal) file.
+Refer to the complete implementation of the book store service in the [loadbalance-failover/bookstorebacked/book_store_service.bal](guide/book_store_backed/book_store_service.bal) file.
 
 ## Testing 
 
