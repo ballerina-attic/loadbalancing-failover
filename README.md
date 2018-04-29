@@ -254,21 +254,21 @@ To check the implementation of the test file, refer to the `tests` directories i
 Once you are done with the development, you can deploy the service using any of the methods listed below. 
 
 ### Deploying locally
-You can deploy the RESTful service that you developed above in your local environment. You can create the Ballerina executable archive (.balx) first and then run it in your local environment as follows.
 
-**Building** 
-Navigate to `SAMPLE_ROOT/src` and run the following commands
+- As the first step, you can build a Ballerina executable archive (.balx) of the service that we developed above. Navigate to `loadbalancing-failover/guide` and run the following command. 
 ```bash
-$ ballerina build book_store_backed/
-
-$ ballerina build book_search/
+   $ ballerina build book_search/
+```
+```bash
+   $ ballerina build book_store_backed/
 ```
 
-**Running**
-```bash
-$ ballerina run book_store_backed.balx
-
-$ ballerina run book_search.balx -Bport=9011
+- Once the balx files are created inside the target folder, you can run that with the following command. 
+```
+   $ ballerina run target/book_search.balx
+```
+```
+   $ ballerina run target/book_store_backed -Bport=9011
 ```
 
 ### Deploying on Docker
@@ -280,8 +280,6 @@ Let's see how we can deploy the book_search_service we developed above on docker
 
 ##### book_search_service.bal
 ```ballerina
-package book_search;
-
 import ballerina/http;
 import ballerinax/docker;
 
@@ -298,11 +296,11 @@ endpoint http:ServiceEndpoint bookSearchServiceEP {
 // http:ClientEndpoint definition for the bookstore backend
 
 @http:ServiceConfig {basePath:"book"}
-service<http:Service> bookSearchService bind bookSearchServiceEP {
+service<http:Service> BookSearch bind bookSearchServiceEP {
 ``` 
 
 - Now you can build a Ballerina executable archive (.balx) of the service that we developed above, using the following command. It points to the service file that we developed above and it will create an executable binary out of that. 
-This will also create the corresponding docker image using the docker annotations that you have configured above. Navigate to the `<SAMPLE_ROOT>/src/` folder and run the following command.  
+This will also create the corresponding docker image using the docker annotations that you have configured above. Navigate to the `<SAMPLE_ROOT>/guide/` folder and run the following command.  
   
 ```
 $ballerina build book_search
@@ -422,3 +420,206 @@ Access the service
 ``` 
  curl -X GET http://ballerina.guides.io/book/Carrie 
 ```
+
+## Observability 
+Ballerina is by default observable. Meaning you can easily observe your services, resources, etc.
+However, observability is disabled by default via configuration. Observability can be enabled by adding following configurations to `ballerina.conf` file in `loadbalancing-failover/guide/`.
+
+```ballerina
+[b7a.observability]
+
+[b7a.observability.metrics]
+# Flag to enable Metrics
+enabled=true
+
+[b7a.observability.tracing]
+# Flag to enable Tracing
+enabled=true
+```
+
+NOTE: The above configuration is the minimum configuration needed to enable tracing and metrics. With these configurations default values are load as the other configuration parameters of metrics and tracing.
+
+### Tracing 
+
+You can monitor ballerina services using in built tracing capabilities of Ballerina. We'll use [Jaeger](https://github.com/jaegertracing/jaeger) as the distributed tracing system.
+Follow the following steps to use tracing with Ballerina.
+
+- You can add the following configurations for tracing. Note that these configurations are optional if you already have the basic configuration in `ballerina.conf` as described above.
+```
+   [b7a.observability]
+
+   [b7a.observability.tracing]
+   enabled=true
+   name="jaeger"
+
+   [b7a.observability.tracing.jaeger]
+   reporter.hostname="localhost"
+   reporter.port=5775
+   sampler.param=1.0
+   sampler.type="const"
+   reporter.flush.interval.ms=2000
+   reporter.log.spans=true
+   reporter.max.buffer.spans=1000
+```
+
+- Run Jaeger docker image using the following command
+```bash
+   $ docker run -d -p5775:5775/udp -p6831:6831/udp -p6832:6832/udp -p5778:5778 -p16686:16686 \
+   -p14268:14268 jaegertracing/all-in-one:latest
+```
+
+- Navigate to `loadbalancing-failover/guide` and run the restful-service using following command 
+```
+   $ ballerina run book_search/
+```
+
+- Observe the tracing using Jaeger UI using following URL
+```
+   http://localhost:16686
+```
+
+### Metrics
+Metrics and alerts are built-in with ballerina. We will use Prometheus as the monitoring tool.
+Follow the below steps to set up Prometheus and view metrics for Ballerina restful service.
+
+- You can add the following configurations for metrics. Note that these configurations are optional if you already have the basic configuration in `ballerina.conf` as described under `Observability` section.
+
+```ballerina
+   [b7a.observability.metrics]
+   enabled=true
+   provider="micrometer"
+
+   [b7a.observability.metrics.micrometer]
+   registry.name="prometheus"
+
+   [b7a.observability.metrics.prometheus]
+   port=9700
+   hostname="0.0.0.0"
+   descriptions=false
+   step="PT1M"
+```
+
+- Create a file `prometheus.yml` inside `/tmp/` location. Add the below configurations to the `prometheus.yml` file.
+```
+   global:
+     scrape_interval:     15s
+     evaluation_interval: 15s
+
+   scrape_configs:
+     - job_name: prometheus
+       static_configs:
+         - targets: ['172.17.0.1:9797']
+```
+
+   NOTE : Replace `172.17.0.1` if your local docker IP differs from `172.17.0.1`
+   
+- Run the Prometheus docker image using the following command
+```
+   $ docker run -p 19090:9090 -v /tmp/prometheus.yml:/etc/prometheus/prometheus.yml \
+   prom/prometheus
+```
+   
+- You can access Prometheus at the following URL
+```
+   http://localhost:19090/
+```
+
+NOTE:  Ballerina will by default have following metrics for HTTP server connector. You can enter following expression in Prometheus UI
+-  http_requests_total
+-  http_response_time
+
+
+### Logging
+
+Ballerina has a log package for logging to the console. You can import ballerina/log package and start logging. The following section will describe how to search, analyze, and visualize logs in real time using Elastic Stack.
+
+- Start the Ballerina Service with the following command from `loadbalancing-failover/guide`
+```
+   $ nohup ballerina run book_search/ &>> ballerina.log&
+```
+   NOTE: This will write the console log to the `ballerina.log` file in the `loadbalancing-failover/guide` directory
+
+- Start Elasticsearch using the following command
+
+- Start Elasticsearch using the following command
+```
+   $ docker run -p 9200:9200 -p 9300:9300 -it -h elasticsearch --name \
+   elasticsearch docker.elastic.co/elasticsearch/elasticsearch:6.2.2 
+```
+
+   NOTE: Linux users might need to run `sudo sysctl -w vm.max_map_count=262144` to increase `vm.max_map_count` 
+   
+- Start Kibana plugin for data visualization with Elasticsearch
+```
+   $ docker run -p 5601:5601 -h kibana --name kibana --link \
+   elasticsearch:elasticsearch docker.elastic.co/kibana/kibana:6.2.2     
+```
+
+- Configure logstash to format the ballerina logs
+
+i) Create a file named `logstash.conf` with the following content
+```
+input {  
+ beats{ 
+     port => 5044 
+ }  
+}
+
+filter {  
+ grok{  
+     match => { 
+	 "message" => "%{TIMESTAMP_ISO8601:date}%{SPACE}%{WORD:logLevel}%{SPACE}
+	 \[%{GREEDYDATA:package}\]%{SPACE}\-%{SPACE}%{GREEDYDATA:logMessage}"
+     }  
+ }  
+}   
+
+output {  
+ elasticsearch{  
+     hosts => "elasticsearch:9200"  
+     index => "store"  
+     document_type => "store_logs"  
+ }  
+}  
+```
+
+ii) Save the above `logstash.conf` inside a directory named as `{SAMPLE_ROOT}\pipeline`
+     
+iii) Start the logstash container, replace the `{SAMPLE_ROOT}` with your directory name
+     
+```
+$ docker run -h logstash --name logstash --link elasticsearch:elasticsearch \
+-it --rm -v ~/{SAMPLE_ROOT}/pipeline:/usr/share/logstash/pipeline/ \
+-p 5044:5044 docker.elastic.co/logstash/logstash:6.2.2
+```
+  
+ - Configure filebeat to ship the ballerina logs
+    
+i) Create a file named `filebeat.yml` with the following content
+```
+filebeat.prospectors:
+- type: log
+  paths:
+    - /usr/share/filebeat/ballerina.log
+output.logstash:
+  hosts: ["logstash:5044"]  
+```
+NOTE : Modify the ownership of filebeat.yml file using `$chmod go-w filebeat.yml` 
+
+ii) Save the above `filebeat.yml` inside a directory named as `{SAMPLE_ROOT}\filebeat`   
+        
+iii) Start the logstash container, replace the `{SAMPLE_ROOT}` with your directory name
+     
+```
+$ docker run -v {SAMPLE_ROOT}/filbeat/filebeat.yml:/usr/share/filebeat/filebeat.yml \
+-v {SAMPLE_ROOT}/loadbalancing-failover/book_search/ballerina.log:/usr/share\
+/filebeat/ballerina.log --link logstash:logstash docker.elastic.co/beats/filebeat:6.2.2
+```
+ 
+ - Access Kibana to visualize the logs using following URL
+```
+   http://localhost:5601 
+```
+  
+ 
+
