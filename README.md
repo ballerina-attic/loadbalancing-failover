@@ -239,8 +239,6 @@ In Ballerina, the unit test cases should be in the same package inside a folder 
    @test:Config
    function testBookSearch() {
 ```
-  
-This guide contains unit test cases for each method available in the 'order_mgt_service' implemented above. 
 
 To run the unit tests, open your terminal and navigate to `loadbalancing-failover/guide`, and run the following command.
 ```bash
