@@ -154,23 +154,23 @@ Refer to the complete implementation of the book store service in the [book_stor
 #### Load balancer
 1. Run the book search service by running the following command in the terminal from the `SAMPLE_ROOT/src` directory.
 ```bash
-$ ballerina run booksearchservice/
+$ ballerina run book_search/
 ```
 
 2. Next, run the three instances of the book store service. Here you have to enter the service port number in each service instance. You can pass the port number as parameter `Bport=<Port Number>`.
 ``` bash
 // 1st instance with port number 9011
-$ ballerina run bookstorebacked/ -Bport=9011
+$ ballerina run book_store_backed -e port=9011
 ```
 
 ``` bash
 // 2nd instance with port number 9012
-$ ballerina run bookstorebacked/ -Bport=9012
+$ ballerina run book_store_backed -e port=9012
 ```
 
 ``` bash
 // 3rd instance with port number 9013
-$ ballerina run bookstorebacked/ -Bport=9013
+$ ballerina run book_store_backed -e port=9013
 ```
    With that, all the required services for this guide should be up and running.
   
@@ -208,7 +208,7 @@ You can see that the book search service has invoked the book store backed with 
 1.  Now shut down the third instance of the book store service by terminating the following instance.
 ```bash
 // 3rd instance with port number 9013
-$ ballerina run bookstorebacked/ -Bport=9013
+$ ballerina run book_store_backed -e port=9013
 // Terminate this from the terminal
 ``` 
 2.  Then send following request repeatedly three times,
@@ -266,7 +266,7 @@ Once you are done with the development, you can deploy the service using any of 
    $ ballerina run target/book_search.balx
 ```
 ```
-   $ ballerina run target/book_store_backed -Bport=9011
+   $ ballerina run target/book_store_backed -e port=9011
 ```
 
 ### Deploying on Docker

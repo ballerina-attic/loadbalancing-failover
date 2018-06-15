@@ -41,7 +41,7 @@ function testInventoryService() {
     http:Request req;
     // Test the book search resource
     // Send the request to service and get the response
-    http:Response resp = check httpEndpoint->post("/Aladin", request = req);
+    http:Response resp = check httpEndpoint->post("/Aladin", req);
     test:assertEquals(resp.statusCode, 200, msg =
         "Book search service didnot respond with 200 OK signal");
 }
