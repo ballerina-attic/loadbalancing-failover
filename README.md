@@ -421,7 +421,7 @@ Access the service
 
 ## Observability 
 Ballerina is by default observable. Meaning you can easily observe your services, resources, etc.
-However, observability is disabled by default via configuration. Observability can be enabled by adding following configurations to `ballerina.conf` file in `loadbalancing-failover/guide/`.
+However, observability is disabled by default via configuration. Observability can be enabled by adding following configurations to `ballerina.conf` file and starting the ballerina service using it. A sample configuration file can be found in `loadbalancing-failover/guide/book_search`.
 
 ```ballerina
 [b7a.observability]
@@ -433,6 +433,11 @@ enabled=true
 [b7a.observability.tracing]
 # Flag to enable Tracing
 enabled=true
+```
+
+To start the ballerina service using the configuration file, run the following command
+```
+   $ ballerina run book_search/ --config book_search/ballerina.conf
 ```
 
 NOTE: The above configuration is the minimum configuration needed to enable tracing and metrics. With these configurations default values are load as the other configuration parameters of metrics and tracing.
@@ -468,7 +473,7 @@ Follow the following steps to use tracing with Ballerina.
 
 - Navigate to `loadbalancing-failover/guide` and run the restful-service using following command 
 ```
-   $ ballerina run book_search/
+   $ ballerina run book_search/ --config book_search/ballerina.conf
 ```
 
 - Observe the tracing using Jaeger UI using following URL
@@ -482,19 +487,14 @@ Follow the below steps to set up Prometheus and view metrics for Ballerina restf
 
 - You can add the following configurations for metrics. Note that these configurations are optional if you already have the basic configuration in `ballerina.conf` as described under `Observability` section.
 
-```ballerina
+```
    [b7a.observability.metrics]
    enabled=true
-   provider="micrometer"
-
-   [b7a.observability.metrics.micrometer]
-   registry.name="prometheus"
+   reporter="prometheus"
 
    [b7a.observability.metrics.prometheus]
-   port=9700
-   hostname="0.0.0.0"
-   descriptions=false
-   step="PT1M"
+   port=9797
+   host="0.0.0.0"
 ```
 
 - Create a file `prometheus.yml` inside `/tmp/` location. Add the below configurations to the `prometheus.yml` file.
@@ -516,7 +516,12 @@ Follow the below steps to set up Prometheus and view metrics for Ballerina restf
    $ docker run -p 19090:9090 -v /tmp/prometheus.yml:/etc/prometheus/prometheus.yml \
    prom/prometheus
 ```
-   
+
+- Navigate to `loadbalancing-failover/guide` and run the restful-service using following command
+```
+   $ ballerina run book_search/ --config book_search/ballerina.conf
+```
+
 - You can access Prometheus at the following URL
 ```
    http://localhost:19090/
