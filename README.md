@@ -377,15 +377,15 @@ $ballerina build book_search
 ```
 Run following command to deploy kubernetes artifacts:  
 ```
-kubectl apply -f ./target/book_search/kubernetes
+kubectl apply -f ./target/kubernetes/book_search
 ```
 
 - You can verify that the docker image that we specified in `` @kubernetes:Deployment `` is created, by using `` docker ps images ``. 
-- Also the Kubernetes artifacts related our service, will be generated in `` ./target/book_search/kubernetes``. 
+- Also the Kubernetes artifacts related our service, will be generated in `` ./target/kubernetes/book_search``. 
 - Now you can create the Kubernetes deployment using:
 
 ```
- $ kubectl apply -f ./target/book_search/kubernetes 
+ $ kubectl apply -f ./target/kubernetes/book_search
    deployment.extensions "ballerina-guides-book-search-service" created
    ingress.extensions "ballerina-guides-book-search-service" created
    service "ballerina-guides-book-search-service" created
