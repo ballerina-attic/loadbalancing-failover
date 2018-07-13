@@ -20,7 +20,7 @@ import ballerina/http;
 import ballerina/io;
 
 // Get the port number from CLI parameters
-@final int PORT = config:getAsInt("Port");
+@final int PORT = config:getAsInt("port");
 
 // Create the endpoint with the PORT from CLI arguments
 endpoint http:Listener bookStoreEP {
@@ -54,7 +54,7 @@ service<http:Service> BookStore bind bookStoreEP {
         };
         // Set the payload and send the results to the client
         http:Response outResponse;
-        outResponse.setJsonPayload(responsePayload);
+        outResponse.setJsonPayload(untaint responsePayload);
         _ = conn->respond(outResponse);
     }
 }

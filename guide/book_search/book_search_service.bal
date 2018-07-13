@@ -68,7 +68,7 @@ service<http:Service> BookSearch bind bookSearchServiceEP {
 
         // Set the json payload with the book name
         json requestPayload = { "bookName": bookName };
-        outRequest.setJsonPayload(requestPayload);
+        outRequest.setJsonPayload(untaint requestPayload);
         // Call the book store backend with load balancer
         var backendResponse = bookStoreBackends->post("/", outRequest);
         // Match the response from the backed to check whether the response received
