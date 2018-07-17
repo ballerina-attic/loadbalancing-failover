@@ -23,13 +23,9 @@ endpoint http:Client httpEndpoint {
 };
 
 function beforeFunction() {
-    // Start the book search service
-    _ = test:startServices("book_search");
 }
 
 function afterFunction() {
-    // Stop the book search service
-    test:stopServices("book_search");
 }
 
 @test:Config {
