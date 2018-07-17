@@ -266,7 +266,7 @@ Once you are done with the development, you can deploy the service using any of 
    $ ballerina run target/book_search.balx
 ```
 ```
-   $ ballerina run target/book_store_backed -e port=9011
+   $ ballerina run target/book_store_backed.balx -e port=9011
 ```
 
 ### Deploying on Docker
