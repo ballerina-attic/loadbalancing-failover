@@ -315,10 +315,12 @@ docker run -d -p 9090:9090 ballerina.guides.io/book_search_service:v1.0
 Here we run the docker image with flag`` -p <host_port>:<container_port>`` so that we use the host port 9090 and the container port 9090. Therefore you can access the service through the host port. 
 
 - Verify docker container is running with the use of `` $ docker ps``. The status of the docker container should be shown as 'Up'. 
-- You can access the service using the same curl commands that we've used above. 
+- Then update the URLs in the load balancing client with that IP
+- Find the IP of the container using `` $ docker inspect <container_id>``
+- Use the following command to access the service running in docker. 
  
 ```
-curl -X GET http://localhost:9090/book/Carrie
+curl -X GET http://<IP_ADDRESS_OF_THE_CONTAINER>:9090/book/Carrie
 ```
 
 
