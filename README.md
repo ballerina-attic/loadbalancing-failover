@@ -296,6 +296,7 @@ endpoint http:ServiceEndpoint bookSearchServiceEP {
 @http:ServiceConfig {basePath:"book"}
 service<http:Service> BookSearch bind bookSearchServiceEP {
 ``` 
+- Update the URLs specified in the load balancing client with the correct IP addresses so that the docker container can access it properly
 
 - Now you can build a Ballerina executable archive (.balx) of the service that we developed above, using the following command. It points to the service file that we developed above and it will create an executable binary out of that. 
 This will also create the corresponding docker image using the docker annotations that you have configured above. Navigate to the `<SAMPLE_ROOT>/guide/` folder and run the following command.  
@@ -315,10 +316,11 @@ docker run -d -p 9090:9090 ballerina.guides.io/book_search_service:v1.0
 Here we run the docker image with flag`` -p <host_port>:<container_port>`` so that we use the host port 9090 and the container port 9090. Therefore you can access the service through the host port. 
 
 - Verify docker container is running with the use of `` $ docker ps``. The status of the docker container should be shown as 'Up'. 
-- You can access the service using the same curl commands that we've used above. 
+- Find the IP of the container using `` $ docker inspect <container_id>``
+- Use the following command to access the service running in docker. 
  
 ```
-curl -X GET http://localhost:9090/book/Carrie
+curl -X GET http://<IP_ADDRESS_OF_THE_CONTAINER>:9090/book/Carrie
 ```
 
 
