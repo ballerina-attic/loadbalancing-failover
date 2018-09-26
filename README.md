@@ -160,17 +160,17 @@ $ ballerina run book_search/
 2. Next, run the three instances of the book store service. Here you have to enter the service port number in each service instance. You can pass the port number as parameter `Bport=<Port Number>`.
 ``` bash
 // 1st instance with port number 9011
-$ ballerina run book_store_backed -e port=9011
+$ ballerina run -e port=9011 book_store_backed 
 ```
 
 ``` bash
 // 2nd instance with port number 9012
-$ ballerina run book_store_backed -e port=9012
+$ ballerina run -e port=9012 book_store_backed 
 ```
 
 ``` bash
 // 3rd instance with port number 9013
-$ ballerina run book_store_backed -e port=9013
+$ ballerina run -e port=9013 book_store_backed 
 ```
    With that, all the required services for this guide should be up and running.
   
@@ -266,7 +266,7 @@ Once you are done with the development, you can deploy the service using any of 
    $ ballerina run target/book_search.balx
 ```
 ```
-   $ ballerina run target/book_store_backed.balx -e port=9011
+   $ ballerina run -e port=9011 target/book_store_backed.balx 
 ```
 
 ### Deploying on Docker
