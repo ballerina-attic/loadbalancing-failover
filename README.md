@@ -47,7 +47,7 @@ loadbalancing-failover
       |   ├── book_search_service.bal
       |   └── tests
       |       └── book_search_service_test.bal
-      └── book_store_backed
+      └── book_store_backend
           └── book_store_service.bal
 ```
 
@@ -61,7 +61,7 @@ loadbalancing-failover
 
 The `book_search` is the service that handles the client orders to find books from bookstores. The book search service calls bookstore backends to retrieve book details. You can see that the load balancing technique is applied when the book search service calls one from the three identical backend servers.
 
-The `book_store_backed` service has an independent web service that accepts orders via HTTP POST method from `book_search_service.bal` and sends the details of the book back to the `book_search_service.bal`.
+The `book_store_backend` service has an independent web service that accepts orders via HTTP POST method from `book_search_service.bal` and sends the details of the book back to the `book_search_service.bal`.
 
 ### Developing the RESTFul service with a load balancer
 
@@ -145,7 +145,7 @@ It then responds with the following JSON.
 }
 ```
 
-Refer to the complete implementation of the book store service in the [book_store_service.bal](guide/book_store_backed/book_store_service.bal) file.
+Refer to the complete implementation of the book store service in the [book_store_service.bal](guide/book_store_backend/book_store_service.bal) file.
 
 ## Testing 
 
@@ -160,17 +160,17 @@ $ ballerina run book_search/
 2. Next, run the three instances of the book store service. Here you have to enter the service port number in each service instance. You can pass the port number as parameter `Bport=<Port Number>`.
 ``` bash
 // 1st instance with port number 9011
-$ ballerina run book_store_backed -e port=9011
+$ ballerina run -e port=9011 book_store_backend 
 ```
 
 ``` bash
 // 2nd instance with port number 9012
-$ ballerina run book_store_backed -e port=9012
+$ ballerina run -e port=9012 book_store_backend 
 ```
 
 ``` bash
 // 3rd instance with port number 9013
-$ ballerina run book_store_backed -e port=9013
+$ ballerina run -e port=9013 book_store_backend 
 ```
    With that, all the required services for this guide should be up and running.
   
@@ -208,7 +208,7 @@ You can see that the book search service has invoked the book store backed with 
 1.  Now shut down the third instance of the book store service by terminating the following instance.
 ```bash
 // 3rd instance with port number 9013
-$ ballerina run book_store_backed -e port=9013
+$ ballerina run -e port=9013 book_store_backend 
 // Terminate this from the terminal
 ``` 
 2.  Then send following request repeatedly three times,
@@ -258,7 +258,7 @@ Once you are done with the development, you can deploy the service using any of 
    $ ballerina build book_search/
 ```
 ```bash
-   $ ballerina build book_store_backed/
+   $ ballerina build book_store_backend/
 ```
 
 - Once the balx files are created inside the target folder, you can run that with the following command. 
@@ -266,7 +266,7 @@ Once you are done with the development, you can deploy the service using any of 
    $ ballerina run target/book_search.balx
 ```
 ```
-   $ ballerina run target/book_store_backed.balx -e port=9011
+   $ ballerina run -e port=9011 target/book_store_backend.balx 
 ```
 
 ### Deploying on Docker
