@@ -208,7 +208,7 @@ You can see that the book search service has invoked the book store backed with 
 1.  Now shut down the third instance of the book store service by terminating the following instance.
 ```bash
 // 3rd instance with port number 9013
-$ ballerina run book_store_backed -e port=9013
+$ ballerina run -e port=9013 book_store_backed 
 // Terminate this from the terminal
 ``` 
 2.  Then send following request repeatedly three times,
