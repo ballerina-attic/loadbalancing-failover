@@ -39,7 +39,7 @@ You’ll build a web service with load balancing. To understand this better, you
 
 ### Create the project structure
 
-Ballerina is a complete programming language that can have any custom project structure that you wish. Although the language allows you to have any package structure, use the following package structure for this project to follow this guide.
+Ballerina is a complete programming language that can have any custom project structure that you wish. Although the language allows you to have any module structure, use the following module structure for this project to follow this guide.
 ```
 loadbalancing-failover
  └── guide/
@@ -66,7 +66,7 @@ The `book_store_backend` service has an independent web service that accepts ord
 ### Developing the RESTFul service with a load balancer
 
 
-The `ballerina/http` package contains the load balancer implementation. After importing that package you can create an endpoint with a load balancer. The `endpoint` keyword in Ballerina refers to a connection with a remote service.`endpoint http:LoadBalanceClient` is the HTTP client with loadbalancer. 
+The `ballerina/http` module contains the load balancer implementation. After importing that module you can create an endpoint with a load balancer. The `endpoint` keyword in Ballerina refers to a connection with a remote service.`endpoint http:LoadBalanceClient` is the HTTP client with loadbalancer. 
 
 First, create an endpoint `bookStoreEndPoints` with the array of HTTP clients that need to be load balanced across. Whenever you call the `bookStoreEndPoints` remote HTTP endpoint, it goes through the load balancer. 
 
@@ -233,7 +233,7 @@ curl -X GET http://localhost:9090/book/Carrie
  
 ### Writing unit tests 
 
-In Ballerina, the unit test cases should be in the same package inside a folder named as 'tests'.  When writing the test functions the below convention should be followed.
+In Ballerina, the unit test cases should be in the same module inside a folder named as 'tests'.  When writing the test functions the below convention should be followed.
 - Test functions should be annotated with `@test:Config`. See the below example.
 ```ballerina
    @test:Config
@@ -338,7 +338,7 @@ Let's see how we can deploy the book_search_service we developed above on kubern
 ##### book_search_service.bal
 
 ```ballerina
-package book_search;
+module book_search;
 
 import ballerina/http;
 import ballerinax/kubernetes;
@@ -544,7 +544,7 @@ NOTE:  Ballerina will by default have following metrics for HTTP server connecto
 
 ### Logging
 
-Ballerina has a log package for logging to the console. You can import ballerina/log package and start logging. The following section will describe how to search, analyze, and visualize logs in real time using Elastic Stack.
+Ballerina has a log module for logging to the console. You can import ballerina/log module and start logging. The following section will describe how to search, analyze, and visualize logs in real time using Elastic Stack.
 
 - Start the Ballerina Service with the following command from `loadbalancing-failover/guide`
 ```
