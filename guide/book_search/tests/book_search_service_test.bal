@@ -15,12 +15,11 @@
 // under the License.
 
 import ballerina/http;
-import ballerina/test;
+import ballerina/log;
 import ballerina/mime;
+import ballerina/test;
 
-endpoint http:Client httpEndpoint {
-    url: "http://localhost:9090/book"
-};
+http:Client httpEndpoint = new("http://localhost:9090/book");
 
 function beforeFunction() {
 }
@@ -37,9 +36,11 @@ function testInventoryService() {
     http:Request req;
     // Test the book search resource
     // Send the request to service and get the response
-    http:Response resp = check httpEndpoint->post("/Aladin", req);
-    test:assertEquals(resp.statusCode, 200, msg =
-        "Book search service didnot respond with 200 OK signal");
+    var resp = httpEndpoint->post("/Aladin", req);
+    if (resp is http:Response) {
+        test:assertEquals(resp.statusCode, 200, msg =
+            "Book search service didnot respond with 200 OK signal");
+    } else if (resp is error) {
+        log:printError(resp.reason(), err = resp);
+    }
 }
-
-

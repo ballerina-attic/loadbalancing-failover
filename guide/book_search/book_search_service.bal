@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/http;
+import ballerina/log;
 //import ballerinax/docker;
 //import ballerinax/kubernetes;
 
@@ -41,48 +42,48 @@ import ballerina/http;
 //}
 
 // Create an endpoint with port 9090 for the book search service
-endpoint http:Listener bookSearchServiceEP {
-    port: 9090
-};
+listener http:Listener bookSearchServiceEP = new(9090);
 
 // Define the load balance client endpoint to call the backend services.
-endpoint http:LoadBalanceClient bookStoreBackends {
+http:LoadBalanceClient bookStoreBackends  = new({
     targets: [
-    // Create an array of HTTP Clients that needs to be Load balanced across
+        // Create an array of HTTP Clients that needs to be Load balanced across
         { url: "http://localhost:9011/book-store" },
         { url: "http://localhost:9012/book-store" },
         { url: "http://localhost:9013/book-store" }
     ]
-};
+});
 
 @http:ServiceConfig { basePath: "book" }
-service<http:Service> BookSearch bind bookSearchServiceEP {
+service BookSearch on bookSearchServiceEP {
     @http:ResourceConfig {
         // Set the bookName as a path parameter
         path: "/{bookName}"
     }
-    bookSearchService(endpoint conn, http:Request req, string bookName) {
+    resource function bookSearchService(http:Caller caller, http:Request req, string bookName) {
         // Initialize the request and response messages for the remote call
-        http:Request outRequest;
-        http:Response outResponse;
+        http:Request outRequest = new;
+        http:Response outResponse = new;
 
         // Set the json payload with the book name
         json requestPayload = { "bookName": bookName };
-        outRequest.setJsonPayload(untaint requestPayload);
+        outRequest.setPayload(untaint requestPayload);
         // Call the book store backend with load balancer
         var backendResponse = bookStoreBackends->post("/", outRequest);
-        // Match the response from the backed to check whether the response received
-        match backendResponse {
-            // Check the response is a http response
-            http:Response inResponse => {
-                // forward the response received from book store back end to client
-                _ = conn->respond(inResponse);
-            }
-            error httpConnectorError => {
-                // Send the response back to the client if book store back end fails
-                outResponse.setTextPayload(httpConnectorError.message);
-                _ = conn->respond(outResponse);
-            }
+        if (backendResponse is http:Response) {
+            var result = caller->respond(backendResponse);
+            handleError(result);
+        } else if (backendResponse is error) {
+            //Send the response back to the client if book store back end fails
+            outResponse.setPayload(string.create(backendResponse.detail().message));
+            var result = caller->respond(outResponse);
+            handleError(result);
         }
+    }
+}
+
+function handleError(error? result) {
+    if (result is error) {
+        log:printError(result.reason(), err = result);
     }
 }

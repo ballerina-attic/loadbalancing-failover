@@ -75,49 +75,49 @@ First, create an endpoint `bookStoreEndPoints` with the array of HTTP clients th
 import ballerina/http;
 
 // Create an endpoint with port 9090 for the book search service
-endpoint http:Listener bookSearchServiceEP {
-    port: 9090
-};
+listener http:Listener bookSearchServiceEP = new(9090);
 
 // Define the load balance client endpoint to call the backend services.
-endpoint http:LoadBalanceClient bookStoreBackends {
+http:LoadBalanceClient bookStoreBackends = new({
     targets: [
     // Create an array of HTTP Clients that needs to be Load balanced across
         { url: "http://localhost:9011/book-store" },
         { url: "http://localhost:9012/book-store" },
         { url: "http://localhost:9013/book-store" }
     ]
-};
+});
 
 @http:ServiceConfig { basePath: "book" }
-service<http:Service> BookSearch bind bookSearchServiceEP {
+service BookSearch on bookSearchServiceEP {
     @http:ResourceConfig {
         // Set the bookName as a path parameter
         path: "/{bookName}"
     }
-    bookSearchService(endpoint conn, http:Request req, string bookName) {
+    resource function bookSearchService(http:Caller caller, http:Request req, string bookName) {
         // Initialize the request and response messages for the remote call
         http:Request outRequest;
         http:Response outResponse;
 
         // Set the json payload with the book name
         json requestPayload = { "bookName": bookName };
-        outRequest.setJsonPayload(requestPayload);
+        outRequest.setPayload(untaint requestPayload);
         // Call the book store backend with load balancer
         var backendResponse = bookStoreBackends->post("/", outRequest);
-        // Match the response from the backed to check whether the response received
-        match backendResponse {
-            // Check the response is a http response
-            http:Response inResponse => {
-                // forward the response received from book store back end to client
-                _ = conn->respond(inResponse);
-            }
-            error httpConnectorError => {
-                // Send the response back to the client if book store back end fails
-                outResponse.setTextPayload(httpConnectorError.message);
-                _ = conn->respond(outResponse);
-            }
+        if (backendResponse is http:Response) {
+            var result = caller->respond(untaint backendResponse);
+            handleError(result);
+        } else if (backendResponse is error) {
+            //Send the response back to the client if book store back end fails
+            outResponse.setPayload(untaint string.create(backendResponse.detail().message));
+            var result = caller->respond(outResponse);
+            handleError(result);
         }
+    }
+}
+
+function handleError(error? result) {
+    if (result is error) {
+        log:printError(result.reason(), err = result);
     }
 }
 ```
@@ -287,9 +287,7 @@ import ballerinax/docker;
     tag:"v1.0"
 }
 
-endpoint http:ServiceEndpoint bookSearchServiceEP {
-    port:9090
-};
+listener http:ServiceEndpoint bookSearchServiceEP = new(9090);
 
 // http:ClientEndpoint definition for the bookstore backend
 
@@ -359,14 +357,12 @@ import ballerinax/kubernetes;
     name:"ballerina-guides-book-search-service"
 }
 
-endpoint http:ServiceEndpoint bookSearchServiceEP {
-    port:9090
-};
+listener http:Listener bookSearchServiceEP = new(9090);
 
 // http:ClientEndpoint definition for the bookstore backend
 
 @http:ServiceConfig {basePath:"book"}
-service<http:Service> bookSearchService bind bookSearchServiceEP {
+service bookSearchService on bookSearchServiceEP {
 ``` 
 
 - Here we have used ``  @kubernetes:Deployment `` to specify the docker image name which will be created as part of building this service. 
@@ -633,6 +629,3 @@ $ docker run -v {SAMPLE_ROOT}/filbeat/filebeat.yml:/usr/share/filebeat/filebeat.
 ```
    http://localhost:5601 
 ```
-  
- 
-
