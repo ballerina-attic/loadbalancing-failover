@@ -52,12 +52,13 @@ service BookStore on bookStoreEP {
                     "Availability": "Available"
                 }
             };
-            // Set the payload and send the results to the client
+            // Set the payload
             outResponse.setPayload(untaint responsePayload);
         } else if (requestPayload is error) {
             outResponse.setPayload(string.create(untaint requestPayload.detail().message));
             outResponse.statusCode = 500;
         }
+        //Send the response to the client
         var result = caller->respond(outResponse);
         if (result is error) {
             log:printError(result.reason(), err = result);
