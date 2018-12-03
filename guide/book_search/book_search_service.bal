@@ -71,6 +71,7 @@ service BookSearch on bookSearchServiceEP {
         // Call the book store backend with load balancer
         var backendResponse = bookStoreBackends->post("/", outRequest);
         if (backendResponse is http:Response) {
+            //Forward the response received from book store back end to client
             var result = caller->respond(backendResponse);
             handleError(result);
         } else if (backendResponse is error) {
