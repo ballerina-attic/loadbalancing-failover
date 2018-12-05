@@ -230,7 +230,7 @@ curl -X GET http://localhost:9090/book/Carrie
 "ISBN":"978-3-16-148410-   0","Availability":"Available"}}
 ```
    
-- This means that the loadbalancer is preventing the third instance from getting invoked since the third instance is shut down. In the meantime you'll see the order of `"Served by Data Ceter"` is similar to the 1 -> 2 -> 1 pattern.
+- This means that the loadbalancer is preventing the third instance from getting invoked since the third instance is shut down. if you observe the response you can see that the order of the `"Served by Data Ceter"` is similar to 1 -> 2 -> 1 pattern.
  
 ### Writing unit tests 
 
@@ -297,8 +297,8 @@ service<http:Service> BookSearch bind bookSearchServiceEP {
 ``` 
 - Update the URLs specified in the load balancing client with the correct IP addresses so that the docker container can access it properly
 
-- Now you can build a Ballerina executable archive (.balx) of the service that we developed above, using the following command. It points to the service file that we developed above and it will create an executable binary out of that. 
-This will also create the corresponding docker image using the docker annotations that you have configured above. Navigate to the `<SAMPLE_ROOT>/guide/` folder and run the following command.  
+- Now you can build a Ballerina executable archive (.balx) of the service that we developed above, using the following command. It points to the service file that we have developed above and it creates an executable binary out of that. 
+This also creates the corresponding docker image using the docker annotations you have configured above. Navigate to the `<SAMPLE_ROOT>/guide/` folder and run the following command.  
   
 ```
 $ballerina build book_search
@@ -325,12 +325,12 @@ curl -X GET http://<IP_ADDRESS_OF_THE_CONTAINER>:9090/book/Carrie
 
 ### Deploying on Kubernetes
 
-- You can run the services that we developed above, on Kubernetes. The Ballerina language offers native support for running a ballerina programs on Kubernetes, 
-with the use of Kubernetes annotations that you can include as part of your service code. Also, it will take care of the creation of the docker images. 
+- You can run the services that we have developed above, on Kubernetes. The Ballerina language offers native support for running ballerina programs on Kubernetes, 
+with the use of Kubernetes annotations which you can include as part of your service code. Also, it takes care of the creation of the docker images. 
 So you don't need to explicitly create docker images prior to deploying it on Kubernetes.   
 Let's see how we can deploy the book_search_service we developed above on kubernetes.
 
-- We need to import `` import ballerinax/kubernetes; `` and use `` @kubernetes `` annotations as shown below to enable kubernetes deployment for the service we developed above. 
+- We need to import `` import ballerinax/kubernetes; `` and use `` @kubernetes `` annotations as shown below to enable kubernetes deployment for the service we have developed above. 
 
 > NOTE: Linux users can use Minikube to try this out locally.
 
@@ -366,16 +366,16 @@ listener http:Listener bookSearchServiceEP = new(9090);
 service bookSearchService on bookSearchServiceEP {
 ``` 
 
-- Here we have used ``  @kubernetes:Deployment `` to specify the docker image name which will be created as part of building this service. 
-- We have also specified `` @kubernetes:Service {} `` so that it will create a Kubernetes service which will expose the Ballerina service that is running on a Pod.  
+- Here we have used ``  @kubernetes:Deployment `` to specify the docker image name that gets created as a part of building this service. 
+- We have also specified `` @kubernetes:Service {} `` so that it creates a Kubernetes service which exposes the Ballerina service that is running on a Pod.  
 - In addition we have used `` @kubernetes:Ingress `` which is the external interface to access your service (with path `` /`` and host name ``ballerina.guides.io``)
 
 If you are using Minikube, you need to set a couple of additional attributes to the `@kubernetes:Deployment` annotation.
 - `dockerCertPath` - The path to the certificates directory of Minikube (e.g., `/home/ballerina/.minikube/certs`).
 - `dockerHost` - The host for the running cluster (e.g., `tcp://192.168.99.100:2376`). The IP address of the cluster can be found by running the `minikube ip` command.
  
-- Now you can build a Ballerina executable archive (.balx) of the service that we developed above, using the following command. It points to the service file that we developed above and it will create an executable binary out of that. 
-This will also create the corresponding docker image and the Kubernetes artifacts using the Kubernetes annotations that you have configured above.
+- Now you can build a Ballerina executable archive (.balx) of the service that we developed above, using the following command. It points to the service file that we have developed above and it creates an executable binary out of that. 
+This also creates the corresponding docker image and the Kubernetes artifacts using the Kubernetes annotations that you have configured above.
   
 ```
 $ballerina build book_search
@@ -386,7 +386,7 @@ kubectl apply -f ./target/kubernetes/book_search
 ```
 
 - You can verify that the docker image that we specified in `` @kubernetes:Deployment `` is created, by using `` docker ps images ``. 
-- Also the Kubernetes artifacts related our service, will be generated in `` ./target/kubernetes/book_search``. 
+- Also the Kubernetes artifacts related to our service, are generated in `` ./target/kubernetes/book_search``. 
 - Now you can create the Kubernetes deployment using:
 
 ```
@@ -554,7 +554,7 @@ Ballerina has a log module for logging to the console. You can import ballerina/
 - Start Elasticsearch using the following command
 ```
    $ docker run -p 9200:9200 -p 9300:9300 -it -h elasticsearch --name \
-   elasticsearch docker.elastic.co/elasticsearch/elasticsearch:6.2.2 
+   elasticsearch docker.elastic.co/elasticsearch/elasticsearch:6.5.1 
 ```
 
    NOTE: Linux users might need to run `sudo sysctl -w vm.max_map_count=262144` to increase `vm.max_map_count` 
@@ -562,7 +562,7 @@ Ballerina has a log module for logging to the console. You can import ballerina/
 - Start Kibana plugin for data visualization with Elasticsearch
 ```
    $ docker run -p 5601:5601 -h kibana --name kibana --link \
-   elasticsearch:elasticsearch docker.elastic.co/kibana/kibana:6.2.2     
+   elasticsearch:elasticsearch docker.elastic.co/kibana/kibana:6.5.1    
 ```
 
 - Configure logstash to format the ballerina logs
@@ -600,7 +600,7 @@ iii) Start the logstash container, replace the `{SAMPLE_ROOT}` with your directo
 ```
 $ docker run -h logstash --name logstash --link elasticsearch:elasticsearch \
 -it --rm -v ~/{SAMPLE_ROOT}/pipeline:/usr/share/logstash/pipeline/ \
--p 5044:5044 docker.elastic.co/logstash/logstash:6.2.2
+-p 5044:5044 docker.elastic.co/logstash/logstash:6.5.1
 ```
   
  - Configure filebeat to ship the ballerina logs
@@ -623,7 +623,7 @@ iii) Start the logstash container, replace the `{SAMPLE_ROOT}` with your directo
 ```
 $ docker run -v {SAMPLE_ROOT}/filbeat/filebeat.yml:/usr/share/filebeat/filebeat.yml \
 -v {SAMPLE_ROOT}/loadbalancing-failover/book_search/ballerina.log:/usr/share\
-/filebeat/ballerina.log --link logstash:logstash docker.elastic.co/beats/filebeat:6.2.2
+/filebeat/ballerina.log --link logstash:logstash docker.elastic.co/beats/filebeat:6.5.1
 ```
  
  - Access Kibana to visualize the logs using following URL
