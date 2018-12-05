@@ -17,7 +17,6 @@
 import ballerina/config;
 import ballerina/log;
 import ballerina/http;
-import ballerina/io;
 
 // Get the port number from CLI parameters
 final int PORT = config:getAsInt("port");
@@ -37,7 +36,7 @@ service BookStore on bookStoreEP {
     resource function bookStoreResource(http:Caller caller, http:Request req) {
         http:Response outResponse = new;
         // Retrieve the book name from the payload
-        io:println(config:getAsString("PORT"));
+        log:printInfo(config:getAsString("PORT"));
         var requestPayload = req.getJsonPayload();
         if (requestPayload is json) {
             json bookTitle = requestPayload.bookName;
