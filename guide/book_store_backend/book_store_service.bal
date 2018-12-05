@@ -55,7 +55,7 @@ service BookStore on bookStoreEP {
             // Set the payload
             outResponse.setPayload(untaint responsePayload);
         } else if (requestPayload is error) {
-            outResponse.setPayload(string.create(untaint requestPayload.detail().message));
+            outResponse.setPayload(string.convert(untaint requestPayload.detail().message));
             outResponse.statusCode = 500;
         }
         //Send the response to the client

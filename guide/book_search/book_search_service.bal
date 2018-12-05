@@ -76,7 +76,7 @@ service BookSearch on bookSearchServiceEP {
             handleError(result);
         } else if (backendResponse is error) {
             //Send the response back to the client if book store back end fails
-            outResponse.setPayload(string.create(backendResponse.detail().message));
+            outResponse.setPayload(string.convert(backendResponse.detail().message));
             var result = caller->respond(outResponse);
             handleError(result);
         }
