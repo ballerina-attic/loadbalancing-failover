@@ -17,44 +17,50 @@
 import ballerina/config;
 import ballerina/log;
 import ballerina/http;
-import ballerina/io;
 
 // Get the port number from CLI parameters
-@final int PORT = config:getAsInt("port");
+final int PORT = config:getAsInt("port");
 
 // Create the endpoint with the PORT from CLI arguments
-endpoint http:Listener bookStoreEP {
-    port: PORT
-};
+listener http:Listener bookStoreEP = new(PORT);
 
 // Set the basepath to the service
 @http:ServiceConfig { basePath: "/book-store" }
-service<http:Service> BookStore bind bookStoreEP {
+service BookStore on bookStoreEP {
 
     // Set the resource configurations
     @http:ResourceConfig {
         methods: ["POST"],
         path: "/"
     }
-    bookStoreResource(endpoint conn, http:Request req) {
+    resource function bookStoreResource(http:Caller caller, http:Request req) {
+        http:Response outResponse = new;
         // Retrieve the book name from the payload
-        io:println(config:getAsString("PORT"));
-        json requestPayload = check req.getJsonPayload();
-        json bookTitle = requestPayload.bookName;
-        // Populate the output data with mock book details
-        json responsePayload = {
-            // Set the DataCenter number as last digit of the PORT
-            "Served by Data Ceter": PORT % 10,
-            "Book Details": {
-                "Title": bookTitle,
-                "Author": "Stephen King",
-                "ISBN": "978-3-16-148410-0",
-                "Availability": "Available"
-            }
-        };
-        // Set the payload and send the results to the client
-        http:Response outResponse;
-        outResponse.setJsonPayload(untaint responsePayload);
-        _ = conn->respond(outResponse);
+        log:printInfo(config:getAsString("PORT"));
+        var requestPayload = req.getJsonPayload();
+        if (requestPayload is json) {
+            json bookTitle = requestPayload.bookName;
+            // Populate the output data with mock book details
+            json responsePayload = {
+                // Set the DataCenter number as last digit of the PORT
+                "Served by Data Ceter": PORT % 10,
+                "Book Details": {
+                    "Title": bookTitle,
+                    "Author": "Stephen King",
+                    "ISBN": "978-3-16-148410-0",
+                    "Availability": "Available"
+                }
+            };
+            // Set the payload
+            outResponse.setPayload(untaint responsePayload);
+        } else if (requestPayload is error) {
+            outResponse.setPayload(string.convert(untaint requestPayload.detail().message));
+            outResponse.statusCode = 500;
+        }
+        //Send the response to the client
+        var result = caller->respond(outResponse);
+        if (result is error) {
+            log:printError(result.reason(), err = result);
+        }
     }
 }
