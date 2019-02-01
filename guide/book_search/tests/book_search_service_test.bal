@@ -33,7 +33,7 @@ function afterFunction() {
 }
 function testInventoryService() {
     // Initialize the empty http request and response
-    http:Request req;
+    http:Request req = new;
     // Test the book search resource
     // Send the request to service and get the response
     var resp = httpEndpoint->post("/Aladin", req);
