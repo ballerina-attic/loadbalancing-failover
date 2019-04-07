@@ -90,30 +90,6 @@ First, create an endpoint `bookStoreEndPoints` with the array of HTTP clients th
 
 import ballerina/http;
 import ballerina/log;
-//import ballerinax/docker;
-//import ballerinax/kubernetes;
-
-//@docker:Config {
-//    registry:"ballerina.guides.io",
-//    name:"book_search_service",
-//    tag:"v1.0"
-//}
-
-//@kubernetes:Ingress {
-//    hostname:"ballerina.guides.io",
-//    name:"ballerina-guides-book-search-service",
-//    path:"/"
-//}
-//
-//@kubernetes:Service {
-//    serviceType:"NodePort",
-//    name:"ballerina-guides-book-search-service"
-//}
-//
-//@kubernetes:Deployment {
-//    image:"ballerina.guides.io/book_search_service:v1.0",
-//    name:"ballerina-guides-book-search-service"
-//}
 
 // Create an endpoint with port 9090 for the book search service
 listener http:Listener bookSearchServiceEP = new(9090);
