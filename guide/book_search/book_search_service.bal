@@ -82,7 +82,7 @@ service BookSearch on bookSearchServiceEP {
             //Send the response back to the client if book store back end fails
             var payload = backendResponse.detail().message;
             if (payload is error) {
-                outResponse.setPayload("Recusive error occurs while reading backend error");
+                outResponse.setPayload("Recursive error occurred while reading backend error");
             } else {
                 outResponse.setPayload(string.convert(payload));
             }
