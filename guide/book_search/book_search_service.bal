@@ -83,7 +83,7 @@ service BookSearch on bookSearchServiceEP {
             var payload = backendResponse.detail().message;
             if (payload is error) {
                 outResponse.setPayload("Recursive error occurred while reading backend error");
-                handleError(result);
+                handleError(payload);
             } else {
                 outResponse.setPayload(string.convert(payload));
             }
