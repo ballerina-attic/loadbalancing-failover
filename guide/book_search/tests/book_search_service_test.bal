@@ -40,7 +40,7 @@ function testInventoryService() {
     if (resp is http:Response) {
         test:assertEquals(resp.statusCode, 200, msg =
             "Book search service didnot respond with 200 OK signal");
-    } else if (resp is error) {
+    } else {
         log:printError(resp.reason(), err = resp);
     }
 }

@@ -25,7 +25,9 @@ final int PORT = config:getAsInt("port");
 listener http:Listener bookStoreEP = new(PORT);
 
 // Set the basepath to the service
-@http:ServiceConfig { basePath: "/book-store" }
+@http:ServiceConfig {
+    basePath: "/book-store"
+}
 service BookStore on bookStoreEP {
 
     // Set the resource configurations
@@ -53,14 +55,17 @@ service BookStore on bookStoreEP {
             };
             // Set the payload
             outResponse.setPayload(untaint responsePayload);
-        } else if (requestPayload is error) {
-            outResponse.setPayload(string.convert(untaint requestPayload.detail().message));
+        } else {
+            outResponse.setPayload("Request is not a valiad JSON");
             outResponse.statusCode = 500;
+            //Send the response to the client
+            var result = caller->respond(outResponse);
+            handleError(result);
         }
-        //Send the response to the client
-        var result = caller->respond(outResponse);
-        if (result is error) {
-            log:printError(result.reason(), err = result);
-        }
+    }
+}
+function handleError(error? result) {
+    if (result is error) {
+        log:printError(result.reason(), err = result);
     }
 }

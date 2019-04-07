@@ -45,7 +45,7 @@ import ballerina/log;
 listener http:Listener bookSearchServiceEP = new(9090);
 
 // Define the load balance client endpoint to call the backend services.
-http:LoadBalanceClient bookStoreBackends  = new({
+http:LoadBalanceClient bookStoreBackends = new({
     targets: [
         // Create an array of HTTP Clients that needs to be Load balanced across
         { url: "http://localhost:9011/book-store" },
@@ -54,7 +54,9 @@ http:LoadBalanceClient bookStoreBackends  = new({
     ]
 });
 
-@http:ServiceConfig { basePath: "book" }
+@http:ServiceConfig {
+    basePath: "book"
+}
 service BookSearch on bookSearchServiceEP {
     @http:ResourceConfig {
         // Set the bookName as a path parameter
@@ -66,7 +68,9 @@ service BookSearch on bookSearchServiceEP {
         http:Response outResponse = new;
 
         // Set the json payload with the book name
-        json requestPayload = { "bookName": bookName };
+        json requestPayload = {
+            "bookName": bookName
+        };
         outRequest.setPayload(untaint requestPayload);
         // Call the book store backend with load balancer
         var backendResponse = bookStoreBackends->post("/", outRequest);
@@ -74,11 +78,17 @@ service BookSearch on bookSearchServiceEP {
             //Forward the response received from the book store back end to the client
             var result = caller->respond(backendResponse);
             handleError(result);
-        } else if (backendResponse is error) {
+        } else {
             //Send the response back to the client if book store back end fails
-            outResponse.setPayload(string.convert(backendResponse.detail().message));
-            var result = caller->respond(outResponse);
-            handleError(result);
+            var payload = backendResponse.detail().message;
+            if (payload is error) {
+                handleError(payload);
+            } else {
+                outResponse.setPayload(string.convert(payload));
+                var result = caller->respond(outResponse);
+                handleError(result);
+            }
+
         }
     }
 }
