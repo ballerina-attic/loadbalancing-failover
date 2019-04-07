@@ -56,7 +56,7 @@ service BookStore on bookStoreEP {
             // Set the payload
             outResponse.setPayload(untaint responsePayload);
         } else {
-            outResponse.setPayload("Request is not a valiad JSON");
+            outResponse.setPayload("Request is not a valid JSON");
             outResponse.statusCode = 500;
             //Send the response to the client
             var result = caller->respond(outResponse);
