@@ -64,6 +64,7 @@ service BookStore on bookStoreEP {
         }
     }
 }
+
 function handleError(error? result) {
     if (result is error) {
         log:printError(result.reason(), err = result);
