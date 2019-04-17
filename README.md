@@ -72,7 +72,9 @@ First, create an endpoint `bookStoreEndPoints` with the array of HTTP clients th
 
 #### book_search_service.bal
 ```ballerina
+
 import ballerina/http;
+import ballerina/log;
 
 // Create an endpoint with port 9090 for the book search service
 listener http:Listener bookSearchServiceEP = new(9090);
@@ -80,14 +82,16 @@ listener http:Listener bookSearchServiceEP = new(9090);
 // Define the load balance client endpoint to call the backend services.
 http:LoadBalanceClient bookStoreBackends = new({
     targets: [
-    // Create an array of HTTP Clients that needs to be Load balanced across
+        // Create an array of HTTP Clients that needs to be Load balanced across
         { url: "http://localhost:9011/book-store" },
         { url: "http://localhost:9012/book-store" },
         { url: "http://localhost:9013/book-store" }
     ]
 });
 
-@http:ServiceConfig { basePath: "book" }
+@http:ServiceConfig {
+    basePath: "book"
+}
 service BookSearch on bookSearchServiceEP {
     @http:ResourceConfig {
         // Set the bookName as a path parameter
@@ -95,21 +99,29 @@ service BookSearch on bookSearchServiceEP {
     }
     resource function bookSearchService(http:Caller caller, http:Request req, string bookName) {
         // Initialize the request and response messages for the remote call
-        http:Request outRequest;
-        http:Response outResponse;
+        http:Request outRequest = new;
+        http:Response outResponse = new;
 
         // Set the json payload with the book name
-        json requestPayload = { "bookName": bookName };
+        json requestPayload = {
+            "bookName": bookName
+        };
         outRequest.setPayload(untaint requestPayload);
         // Call the book store backend with load balancer
         var backendResponse = bookStoreBackends->post("/", outRequest);
         if (backendResponse is http:Response) {
             //Forward the response received from the book store back end to the client
-            var result = caller->respond(untaint backendResponse);
+            var result = caller->respond(backendResponse);
             handleError(result);
-        } else if (backendResponse is error) {
+        } else {
             //Send the response back to the client if book store back end fails
-            outResponse.setPayload(untaint string.convert(backendResponse.detail().message));
+            var payload = backendResponse.detail().message;
+            if (payload is error) {
+                outResponse.setPayload("Recursive error occurred while reading backend error");
+                handleError(payload);
+            } else {
+                outResponse.setPayload(string.convert(payload));
+            }
             var result = caller->respond(outResponse);
             handleError(result);
         }
