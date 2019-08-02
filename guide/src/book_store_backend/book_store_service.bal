@@ -55,7 +55,7 @@ service BookStore on bookStoreEP {
                     }
                 };
                 // Set the payload
-                outResponse.setPayload(responsePayload);
+                outResponse.setPayload(<@untainted>responsePayload);
             } else {
                 outResponse.setPayload("BookTitle is not a valid JSON");
             }
