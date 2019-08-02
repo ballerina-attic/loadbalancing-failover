@@ -71,7 +71,7 @@ service BookSearch on bookSearchServiceEP {
         json requestPayload = {
             "bookName": bookName
         };
-        outRequest.setPayload(untaint requestPayload);
+        outRequest.setPayload(<@untainted>requestPayload);
         // Call the book store backend with load balancer
         var backendResponse = bookStoreBackends->post("/", outRequest);
         if (backendResponse is http:Response) {
@@ -80,13 +80,9 @@ service BookSearch on bookSearchServiceEP {
             handleError(result);
         } else {
             //Send the response back to the client if book store back end fails
-            var payload = backendResponse.detail().message;
-            if (payload is error) {
-                outResponse.setPayload("Recursive error occurred while reading backend error");
-                handleError(payload);
-            } else {
-                outResponse.setPayload(string.convert(payload));
-            }
+            handleError(backendResponse);
+            var payload = backendResponse.detail()["message"];
+            outResponse.setPayload(payload);
             var result = caller->respond(outResponse);
             handleError(result);
         }

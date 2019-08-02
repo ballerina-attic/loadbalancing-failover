@@ -41,27 +41,31 @@ service BookStore on bookStoreEP {
         log:printInfo(config:getAsString("PORT"));
         var requestPayload = req.getJsonPayload();
         if (requestPayload is json) {
-            json bookTitle = requestPayload.bookName;
+            (json | error) bookTitle = requestPayload.bookName;
             // Populate the output data with mock book details
-            json responsePayload = {
-                // Set the DataCenter number as last digit of the PORT
-                "Served by Data Ceter": PORT % 10,
-                "Book Details": {
-                    "Title": bookTitle,
-                    "Author": "Stephen King",
-                    "ISBN": "978-3-16-148410-0",
-                    "Availability": "Available"
-                }
-            };
-            // Set the payload
-            outResponse.setPayload(untaint responsePayload);
+            if (bookTitle is json) {
+                json responsePayload = {
+                    // Set the DataCenter number as last digit of the PORT
+                    "Served by Data Ceter": PORT % 10,
+                    "Book Details": {
+                        "Title": bookTitle,
+                        "Author": "Stephen King",
+                        "ISBN": "978-3-16-148410-0",
+                        "Availability": "Available"
+                    }
+                };
+                // Set the payload
+                outResponse.setPayload(responsePayload);
+            } else {
+                outResponse.setPayload("BookTitle is not a valid JSON");
+            }
         } else {
             outResponse.setPayload("Request is not a valid JSON");
             outResponse.statusCode = 500;
-            //Send the response to the client
-            var result = caller->respond(outResponse);
-            handleError(result);
         }
+        //Send the response to the client
+        var result = caller->respond(outResponse);
+        handleError(result);
     }
 }
 
