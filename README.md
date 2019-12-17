@@ -39,32 +39,36 @@ You’ll build a web service with load balancing. To understand this better, you
 
 ### Create the project structure
 
-Ballerina is a complete programming language that can have any custom project structure that you wish. Although the language allows you to have any module structure, use the following module structure for this project to follow this guide.
+Let's create the following project structure for this guide.
 ```
 loadbalancing-failover
  └── guide/
-      ├── book_search
-      |   ├── book_search_service.bal
-      |   └── tests
-      |       └── book_search_service_test.bal
-      └── book_store_backend
-          └── book_store_service.bal
+      └── src/
+          ├── book_search
+          |   ├── book_search_service.bal
+          |   ├── ballerina.conf
+          |   └── tests
+          |       └── book_search_service_test.bal
+          └── book_store_backend
+              └── book_store_service.bal
 ```
 
-- Create the above directories in your local machine and also create empty `.bal` files.
-
-- Then open the terminal and navigate to `loadbalancing-failover/guide` and run Ballerina project initializing toolkit.
+To create the basic project structure run the following command.
 ```bash
-   $ ballerina init
+   $ ballerina create guide
+```
+Now, navigate to `guide` directory and run the following command to create the new module `book_search`.
+
+```bash
+    $ ballerina create book_search 
 ```
 
+Now, add the `book_search_service.bal` and `book_search_service_test.bal` files in place of `main.bal` and 
+`main_test.bal` which get created as a part of the generic project template.
 
-The `book_search` is the service that handles the client orders to find books from bookstores. The book search service calls bookstore backends to retrieve book details. You can see that the load balancing technique is applied when the book search service calls one from the three identical backend servers.
-
-The `book_store_backend` service has an independent web service that accepts orders via HTTP POST method from `book_search_service.bal` and sends the details of the book back to the `book_search_service.bal`.
+Repeat the same steps to create `book_store_backend` services.
 
 ### Developing the RESTFul service with a load balancer
-
 
 The `ballerina/http` module contains the load balancer implementation. After importing that module you can create an endpoint with a load balancer. The `endpoint` keyword in Ballerina refers to a connection with a remote service.`endpoint http:LoadBalanceClient` is the HTTP client with loadbalancer. 
 
@@ -106,7 +110,7 @@ service BookSearch on bookSearchServiceEP {
         json requestPayload = {
             "bookName": bookName
         };
-        outRequest.setPayload(untaint requestPayload);
+        outRequest.setPayload(<@untainted>requestPayload);
         // Call the book store backend with load balancer
         var backendResponse = bookStoreBackends->post("/", outRequest);
         if (backendResponse is http:Response) {
@@ -115,13 +119,9 @@ service BookSearch on bookSearchServiceEP {
             handleError(result);
         } else {
             //Send the response back to the client if book store back end fails
-            var payload = backendResponse.detail().message;
-            if (payload is error) {
-                outResponse.setPayload("Recursive error occurred while reading backend error");
-                handleError(payload);
-            } else {
-                outResponse.setPayload(string.convert(payload));
-            }
+            handleError(backendResponse);
+            var payload = backendResponse.detail()["message"];
+            outResponse.setPayload(payload);
             var result = caller->respond(outResponse);
             handleError(result);
         }
@@ -158,14 +158,14 @@ It then responds with the following JSON.
 }
 ```
 
-Refer to the complete implementation of the book store service in the [book_store_service.bal](guide/book_store_backend/book_store_service.bal) file.
+Refer to the complete implementation of the book store service in the [book_store_service.bal](guide/src/book_store_backend/book_store_service.bal) file.
 
 ## Testing 
 
 
 ### Try it out
 #### Load balancer
-1. Run the book search service by running the following command in the terminal from the `SAMPLE_ROOT/src` directory.
+1. Run the book search service by running the following command in the terminal from the `SAMPLE_ROOT/guide` directory.
 ```bash
 $ ballerina run book_search/
 ```
@@ -266,7 +266,7 @@ Once you are done with the development, you can deploy the service using any of 
 
 ### Deploying locally
 
-- As the first step, you can build a Ballerina executable archive (.balx) of the service that we developed above. Navigate to `loadbalancing-failover/guide` and run the following command. 
+- As the first step, you can build a Ballerina executable archive (.jar) of the service that we developed above. Navigate to `loadbalancing-failover/guide` and run the following command. 
 ```bash
    $ ballerina build book_search/
 ```
@@ -276,10 +276,10 @@ Once you are done with the development, you can deploy the service using any of 
 
 - Once the balx files are created inside the target folder, you can run that with the following command. 
 ```
-   $ ballerina run target/book_search.balx
+   $ ballerina run target/bin/book_search-executable.jar
 ```
 ```
-   $ ballerina run -e port=9011 target/book_store_backend.balx 
+   $ ballerina run -e port=9011 target/bin/book_store_backend-executable.jar 
 ```
 
 ### Deploying on Docker
@@ -386,7 +386,7 @@ If you are using Minikube, you need to set a couple of additional attributes to 
 - `dockerCertPath` - The path to the certificates directory of Minikube (e.g., `/home/ballerina/.minikube/certs`).
 - `dockerHost` - The host for the running cluster (e.g., `tcp://192.168.99.100:2376`). The IP address of the cluster can be found by running the `minikube ip` command.
  
-- Now you can build a Ballerina executable archive (.balx) of the service that we developed above, using the following command. It points to the service file that we have developed above and it creates an executable binary out of that. 
+- Now you can build a Ballerina executable archive (.jar) of the service that we developed above, using the following command. It points to the service file that we have developed above and it creates an executable binary out of that. 
 This also creates the corresponding docker image and the Kubernetes artifacts using the Kubernetes annotations that you have configured above.
   
 ```
@@ -456,7 +456,7 @@ enabled=true
 
 To start the ballerina service using the configuration file, run the following command
 ```
-   $ ballerina run --config book_search/ballerina.conf book_search/
+   $ ballerina run --config /src/book_search/ballerina.conf book_search/
 ```
 
 NOTE: The above configuration is the minimum configuration needed to enable tracing and metrics. With these configurations default values are load as the other configuration parameters of metrics and tracing.
@@ -492,7 +492,7 @@ Follow the following steps to use tracing with Ballerina.
 
 - Navigate to `loadbalancing-failover/guide` and run the restful-service using the following command
 ```
-   $ ballerina run --config book_search/ballerina.conf book_search/
+   $ ballerina run --config /src/book_search/ballerina.conf book_search/
 ```
 
 - Observe the tracing using Jaeger UI using following URL
